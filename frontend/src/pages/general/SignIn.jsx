@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { GraduationCap, Lock, Mail, UserCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 function SignIn() {
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle authentication logic here
-    console.log("Sign in attempt:", { role, email, password });
+    if (role === "coordinator") {
+      navigate("/coordinator"); // Navigate to CoordinatorPage if the coordinator role is selected
+    } 
+    else if (role === "teacher") {
+      navigate("/teacher"); // Navigate to TeacherPage if the teacher role is selected
+    } else {
+      console.log("Role not recognized for navigation:", role);
+    }
   };
 
   return (
@@ -68,7 +76,6 @@ function SignIn() {
                 <input
                   id="email"
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -92,7 +99,6 @@ function SignIn() {
                 <input
                   id="password"
                   type="password"
-                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -108,7 +114,7 @@ function SignIn() {
             >
               Sign In
             </button>
-
+            
             {/* Forgot Password Link */}
             <div className="text-center">
               <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
