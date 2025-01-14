@@ -5,9 +5,35 @@ function SignIn() {
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    return password.length >= minLength && hasUpperCase;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError(
+        "Password must be at least 8 characters long and contain at least one uppercase letter."
+      );
+      return;
+    }
+
     // Handle authentication logic here
     console.log("Sign in attempt:", { role, email, password });
   };
@@ -29,7 +55,7 @@ function SignIn() {
 
       {/* Sign In Form */}
       <div className="max-w-md w-full mx-auto px-4">
-        <div className="bg-white shadow-lg rounded-lg p-8">
+        <div className="bg-white shadow-lg rounded-lg p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection */}
             <div className="grid grid-cols-3 gap-3">
@@ -99,6 +125,11 @@ function SignIn() {
                   placeholder="••••••••"
                 />
               </div>
+            </div>
+
+            {/* Reserved Space for Error Message */}
+            <div className="h-6 text-center">
+              {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
 
             {/* Submit Button */}
