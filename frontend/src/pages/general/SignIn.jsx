@@ -41,6 +41,9 @@ function SignIn() {
     } 
     else if (role === "teacher") {
       navigate("/teacher"); // Navigate to TeacherPage if the teacher role is selected
+    }
+    else if (role === "admin") {
+      navigate("/admin"); // Navigate to AdminPage if the admin role is selected
     } else {
       console.log("Role not recognized for navigation:", role);
     }
