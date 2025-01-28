@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { GraduationCap, Lock, Mail, UserCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
   const [role, setRole] = useState("");
@@ -9,18 +10,16 @@ function SignIn() {
   const [error, setError] = useState("");
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return true
   };
 
   const validatePassword = (password) => {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    return password.length >= minLength && hasUpperCase;
+    return true
   };
-  const navigate = useNavigate(); // Initialize the navigate function
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -36,16 +35,31 @@ function SignIn() {
       return;
     }
 
-    if (role === "coordinator") {
-      navigate("/coordinator"); // Navigate to CoordinatorPage if the coordinator role is selected
-    } 
-    else if (role === "teacher") {
-      navigate("/teacher"); // Navigate to TeacherPage if the teacher role is selected
-    }
-    else if (role === "admin") {
-      navigate("/admin"); // Navigate to AdminPage if the admin role is selected
-    } else {
-      console.log("Role not recognized for navigation:", role);
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/users/login",
+        {
+          username: email,
+          password: password,
+        }
+      );
+
+      // Assuming the response contains a token or user data
+      console.log("Login successful:", response.data);
+
+      // Navigate based on role
+      if (role === "coordinator") {
+        navigate("/coordinator");
+      } else if (role === "teacher") {
+        navigate("/teacher");
+      } else if (role === "admin") {
+        navigate("/admin");
+      } else {
+        console.log("Role not recognized for navigation:", role);
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      setError("Login failed. Please check your credentials.");
     }
   };
 
@@ -148,7 +162,7 @@ function SignIn() {
             >
               Sign In
             </button>
-            
+
             {/* Forgot Password Link */}
             <div className="text-center">
               <a href="#" className="text-sm text-blue-600 hover:text-blue-500">

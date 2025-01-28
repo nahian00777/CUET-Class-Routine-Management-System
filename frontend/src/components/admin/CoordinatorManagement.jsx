@@ -1,41 +1,114 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Save } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Plus, Edit2, Save } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function CoordinatorManagement() {
   const [coordinators, setCoordinators] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    id: '',
-    name: '',
-    department: '',
-    assignedBatch: '', // You can use null or an empty string based on your preference
+    coordinatorID: "",
+    coordinatorName: "",
+    department: "",
+    assignedBatch: "",
   });
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchCoordinators = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/v1/coordinators/getCoordinator"
+        );
+        setCoordinators(response.data.data);
+      } catch (error) {
+        console.error("Error fetching coordinators:", error);
+        toast.error("Error fetching coordinators.");
+      }
+    };
+    fetchCoordinators();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingId) {
-      setCoordinators(coordinators.map(c => c.id === editingId ? formData : c));
-      setEditingId(null);
+      try {
+        await axios.patch(
+          "http://localhost:3000/api/v1/coordinators/updateCoordinator",
+          {
+            prevCoordinatorID: editingId,
+            coordinatorID: formData.coordinatorID,
+            coordinatorName: formData.coordinatorName,
+            department: formData.department,
+            assignedBatch: formData.assignedBatch,
+          }
+        );
+        setCoordinators(
+          coordinators.map((c) =>
+            c.coordinatorID === editingId ? formData : c
+          )
+        );
+        setEditingId(null);
+        toast.success("Coordinator updated successfully.");
+      } catch (error) {
+        console.error("Error updating coordinator:", error);
+        toast.error("Error updating coordinator.");
+      }
     } else {
-      setCoordinators([...coordinators, formData]);
+      try {
+        const response = await axios.post(
+          "http://localhost:3000/api/v1/coordinators/addCoordinator",
+          {
+            coordinatorID: formData.coordinatorID,
+            coordinatorName: formData.coordinatorName,
+            department: formData.department,
+            assignedBatch: formData.assignedBatch,
+          }
+        );
+        setCoordinators([...coordinators, response.data.data]);
+        setFormData({
+          coordinatorID: "",
+          coordinatorName: "",
+          department: "",
+          assignedBatch: "",
+        });
+        toast.success("Coordinator added successfully.");
+      } catch (error) {
+        console.error("Error adding coordinator:", error);
+        toast.error("Error adding coordinator.");
+      }
     }
-    setFormData({ id: '', name: '', department: '', assignedBatch: '' });
+  };
+
+  const handleEdit = (coordinator) => {
+    setEditingId(coordinator.coordinatorID);
+    setFormData({
+      coordinatorID: coordinator.coordinatorID,
+      coordinatorName: coordinator.coordinatorName,
+      department: coordinator.department,
+      assignedBatch: coordinator.assignedBatch,
+    });
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Assign Course Coordinators</h1>
-      
-      <form onSubmit={handleSubmit} className="mb-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-4 gap-4">
+      <h1 className="text-2xl font-bold mb-6">Manage Coordinators</h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="mb-8 bg-white p-6 rounded-lg shadow-md"
+      >
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Coordinator ID
             </label>
             <input
               type="text"
-              value={formData.id}
-              onChange={e => setFormData({ ...formData, id: e.target.value })}
+              value={formData.coordinatorID}
+              onChange={(e) =>
+                setFormData({ ...formData, coordinatorID: e.target.value })
+              }
               className="w-full p-2 border rounded"
               required
             />
@@ -46,8 +119,10 @@ export default function CoordinatorManagement() {
             </label>
             <input
               type="text"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              value={formData.coordinatorName}
+              onChange={(e) =>
+                setFormData({ ...formData, coordinatorName: e.target.value })
+              }
               className="w-full p-2 border rounded"
               required
             />
@@ -59,7 +134,9 @@ export default function CoordinatorManagement() {
             <input
               type="text"
               value={formData.department}
-              onChange={e => setFormData({ ...formData, department: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, department: e.target.value })
+              }
               className="w-full p-2 border rounded"
               required
             />
@@ -71,9 +148,11 @@ export default function CoordinatorManagement() {
             <input
               type="text"
               value={formData.assignedBatch}
-              onChange={e => setFormData({ ...formData, assignedBatch: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, assignedBatch: e.target.value })
+              }
               className="w-full p-2 border rounded"
-              placeholder="Optional"
+              required
             />
           </div>
         </div>
@@ -81,8 +160,12 @@ export default function CoordinatorManagement() {
           type="submit"
           className="mt-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          {editingId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {editingId ? 'Update Coordinator' : 'Add Coordinator'}
+          {editingId ? (
+            <Save className="h-4 w-4" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
+          {editingId ? "Update Coordinator" : "Add Coordinator"}
         </button>
       </form>
 
@@ -108,20 +191,23 @@ export default function CoordinatorManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {coordinators.map(coordinator => (
-              <tr key={coordinator.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{coordinator.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{coordinator.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{coordinator.department}</td>
+            {coordinators.map((coordinator) => (
+              <tr key={coordinator.coordinatorID}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {coordinator.assignedBatch || '-'}
+                  {coordinator.coordinatorID}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {coordinator.coordinatorName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {coordinator.department}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {coordinator.assignedBatch || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
-                    onClick={() => {
-                      setEditingId(coordinator.id);
-                      setFormData(coordinator);
-                    }}
+                    onClick={() => handleEdit(coordinator)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     <Edit2 className="h-4 w-4" />
@@ -139,6 +225,8 @@ export default function CoordinatorManagement() {
           </tbody>
         </table>
       </div>
+
+      <ToastContainer />
     </div>
   );
 }
