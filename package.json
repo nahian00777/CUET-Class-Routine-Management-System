@@ -1,0 +1,16 @@
+{
+  "name": "cuet-class-routine-management-system",
+  "version": "1.0.0",
+  "description": "A user-friendly class routine management system designed to make scheduling easier for class coordinators. Save time, avoid conflicts, and effortlessly create and manage class schedules with ease.",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.10.8"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}
