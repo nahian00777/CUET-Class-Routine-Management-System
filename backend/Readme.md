@@ -1,1 +1,1 @@
-This is the backend of the project. 
+This is the backend of the project. CUET CLASS ROUTINE MANAGEMENT SYSTEM
