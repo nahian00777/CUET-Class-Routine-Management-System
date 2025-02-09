@@ -363,13 +363,11 @@ function GenerateRoutine() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="credits"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                <label htmlFor="credits" className="block text-sm font-medium text-gray-700">
                     Credits
                   </label>
-                  <select
+                  <input
+                    type="number"
                     id="credits"
                     value={newCourse.credits}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, credits: parseInt(e.target.value) }))}
