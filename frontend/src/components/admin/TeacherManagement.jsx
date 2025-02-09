@@ -119,19 +119,21 @@ export default function TeacherManagement() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
-            <input
-              type="text"
+            <select
               value={formData.department}
-              onChange={(e) =>
-                setFormData({ ...formData, department: e.target.value })
-              }
+              onChange={e => setQuery({ ...query, level: e.target.value })}
               className="w-full p-2 border rounded"
               required
-              placeholder="Department"
-            />
+            >
+              <option value="">Select Department</option>
+              <option value="1">CSE</option>
+              <option value="2">EEE</option>
+              <option value="3">ME</option>
+              <option value="4">CE</option>
+            </select>
           </div>
         </div>
         <button

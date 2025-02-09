@@ -21,16 +21,21 @@ export default function ViewRoutine() {
       <form onSubmit={handleSubmit} className="mb-8 bg-white p-6 rounded-lg shadow-md">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
-            <input
-              type="text"
+            <select
               value={query.department}
               onChange={e => setQuery({ ...query, department: e.target.value })}
               className="w-full p-2 border rounded"
               required
-            />
+            >
+              <option value="">Select Department</option>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="ME">ME</option>
+              <option value="CE">CE</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

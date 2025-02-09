@@ -131,6 +131,22 @@ export default function CoordinatorManagement() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
+            <select
+              value={formData.department}
+              onChange={e => setQuery({ ...query, level: e.target.value })}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="">Select Department</option>
+              <option value="1">CSE</option>
+              <option value="2">EEE</option>
+              <option value="3">ME</option>
+              <option value="4">CE</option>
+            </select>
+
+            {/* <label className="block text-sm font-medium text-gray-700 mb-1">
+              Department
+            </label>
             <input
               type="text"
               value={formData.department}
@@ -139,7 +155,7 @@ export default function CoordinatorManagement() {
               }
               className="w-full p-2 border rounded"
               required
-            />
+            /> */}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -87,7 +87,7 @@ const loginCoordinator = asyncHandler(async (req, res) => {
   }
 
   // 3rd step :
-  const teacher = await Coordinator.findOne({
+  const coordinator = await Coordinator.findOne({
     $or: [{ coordinatorID }, { coordinatorName }],
   });
 
