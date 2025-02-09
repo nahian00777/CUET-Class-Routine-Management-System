@@ -47,6 +47,9 @@ export default function TimePreferences() {
           {preferences.map((slot, index) => (
             <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
               <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Day
+                </label>
                 <select
                   value={slot.day}
                   onChange={(e) => {
@@ -62,6 +65,9 @@ export default function TimePreferences() {
                 </select>
               </div>
               <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Time
+                </label>
                 <select
                   value={slot.startTime}
                   onChange={(e) => {
@@ -77,6 +83,9 @@ export default function TimePreferences() {
                 </select>
               </div>
               <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Time
+                </label>
                 <select
                   value={slot.endTime}
                   onChange={(e) => {
