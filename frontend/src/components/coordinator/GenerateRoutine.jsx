@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
-import { Trash2, X, Plus, Check } from 'lucide-react';
-import RoutineGeneratorr from './RoutineGeneratorr';
+import React, { useState } from "react";
+import { Trash2, X, Plus, Check } from "lucide-react";
+import RoutineGeneratorr from "./RoutineGeneratorr";
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
-const TIME_SLOTS = ['8:10','9:00', '9:50', '11:00', '11:50', '12:40', '2:30', '3:20', '4:10'];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const TIME_SLOTS = [
+  "8:10",
+  "9:00",
+  "9:50",
+  "11:00",
+  "11:50",
+  "12:40",
+  "2:30",
+  "3:20",
+  "4:10",
+];
 
 function GenerateRoutine() {
   const [courses, setCourses] = useState([]);
@@ -12,29 +22,29 @@ function GenerateRoutine() {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [editingCourseIndex, setEditingCourseIndex] = useState(null);
   const [newCourse, setNewCourse] = useState({
-    course_code: '',
+    course_code: "",
     credits: 0,
     is_lab: false,
-    time_slots: []
+    time_slots: [],
   });
 
   const handleAddCourse = () => {
     if (!newCourse.course_code) return;
     setCourses([...courses, { ...newCourse, time_slots: [] }]);
     setNewCourse({
-      course_code: '',
+      course_code: "",
       credits: 0,
       is_lab: false,
-      time_slots: []
+      time_slots: [],
     });
     setShowNewCourseForm(false);
   };
 
   const toggleTimeSlot = (day, time) => {
     const slotString = `${day} ${time}`;
-    setSelectedSlots(prev =>
+    setSelectedSlots((prev) =>
       prev.includes(slotString)
-        ? prev.filter(slot => slot !== slotString)
+        ? prev.filter((slot) => slot !== slotString)
         : [...prev, slotString]
     );
   };
@@ -47,7 +57,7 @@ function GenerateRoutine() {
     const newCourses = [...courses];
     newCourses[editingCourseIndex].time_slots = [
       ...newCourses[editingCourseIndex].time_slots,
-      ...selectedSlots
+      ...selectedSlots,
     ];
     setCourses(newCourses);
     setShowModal(false);
@@ -56,69 +66,70 @@ function GenerateRoutine() {
 
   const formatCoursesForRoutine = () => {
     const regularCourses = courses
-      .filter(course => !course.is_lab)
-      .map(course => {
+      .filter((course) => !course.is_lab)
+      .map((course) => {
         // Group time slots by day
         const preferred_slots = course.time_slots.reduce((acc, slot) => {
-          const [day, time] = slot.split(' ');
+          const [day, time] = slot.split(" ");
           if (!acc[day]) acc[day] = [];
           acc[day].push(`${time}-${add50Minutes(time)}`);
           return acc;
         }, {});
-  
+
         // Convert to the required format
         return {
           course_code: course.course_code,
           credits: course.credits,
-          preferred_slots: Object.entries(preferred_slots).flatMap(([day, slots]) =>
-            slots.map(slot => [day, slot])
+          preferred_slots: Object.entries(preferred_slots).flatMap(
+            ([day, slots]) => slots.map((slot) => [day, slot])
           ),
         };
       });
-  
+
     const labCourses = courses
-      .filter(course => course.is_lab)
-      .map(course => {
+      .filter((course) => course.is_lab)
+      .map((course) => {
         // Group time slots by day
         const preferred_slots = course.time_slots.reduce((acc, slot) => {
-          const [day, time] = slot.split(' ');
+          const [day, time] = slot.split(" ");
           if (!acc[day]) acc[day] = [];
           acc[day].push(`${time}-${add50Minutes(time)}`);
           return acc;
         }, {});
-  
+
         // Convert to the required format
         return {
           course_code: course.course_code,
           credits: course.credits,
-          preferred_slots: Object.entries(preferred_slots).map(([day, slots]) => [
-            day,
-            slots,
-          ]),
+          preferred_slots: Object.entries(preferred_slots).map(
+            ([day, slots]) => [day, slots]
+          ),
         };
       });
-  
+
     return { regularCourses, labCourses };
   };
-  
+
   // Helper function to add 50 minutes to a time string
   const add50Minutes = (time) => {
-    const [hour, minute] = time.split(':').map(Number);
+    const [hour, minute] = time.split(":").map(Number);
     const date = new Date();
     date.setHours(hour, minute, 0, 0);
     date.setMinutes(date.getMinutes() + 50);
-    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Course Schedule Manager</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Course Schedule Manager
+        </h1>
         <button
           onClick={() => setShowNewCourseForm(true)}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-10 w-7 mr-1" />
           Add Course
         </button>
       </div>
@@ -151,7 +162,9 @@ function GenerateRoutine() {
                   <div className="flex items-center">
                     <button
                       onClick={() => {
-                        const newCourses = courses.filter((_, index) => index !== courseIndex);
+                        const newCourses = courses.filter(
+                          (_, index) => index !== courseIndex
+                        );
                         setCourses(newCourses);
                       }}
                       className="mr-2 text-red-600 hover:text-red-800"
@@ -162,7 +175,7 @@ function GenerateRoutine() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {course.is_lab ? 'Lab' : 'Lecture'}
+                  {course.is_lab ? "Lab" : "Lecture"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {course.credits}
@@ -170,12 +183,18 @@ function GenerateRoutine() {
                 <td className="px-6 py-4 text-sm text-gray-500">
                   <div className="flex flex-wrap gap-2">
                     {course.time_slots.map((slot, slotIndex) => (
-                      <div key={slotIndex} className="inline-flex items-center bg-gray-100 rounded-md">
+                      <div
+                        key={slotIndex}
+                        className="inline-flex items-center bg-gray-100 rounded-md"
+                      >
                         <span className="px-3 py-1 text-sm">{slot}</span>
                         <button
                           onClick={() => {
                             const newCourses = [...courses];
-                            newCourses[courseIndex].time_slots = course.time_slots.filter((_, i) => i !== slotIndex);
+                            newCourses[courseIndex].time_slots =
+                              course.time_slots.filter(
+                                (_, i) => i !== slotIndex
+                              );
                             setCourses(newCourses);
                           }}
                           className="p-1 hover:bg-gray-200 rounded-r-md"
@@ -206,7 +225,7 @@ function GenerateRoutine() {
       </div>
 
       <div className="mt-8">
-        <RoutineGeneratorr 
+        <RoutineGeneratorr
           courses={formatCoursesForRoutine().regularCourses}
           labCourses={formatCoursesForRoutine().labCourses}
         />
@@ -219,7 +238,8 @@ function GenerateRoutine() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold">
-                  Select Time Slots for Course {courses[editingCourseIndex].course_code}
+                  Select Time Slots for Course{" "}
+                  {courses[editingCourseIndex].course_code}
                 </h2>
                 <button
                   onClick={() => {
@@ -231,25 +251,31 @@ function GenerateRoutine() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-6 gap-2 mb-6">
                 <div className="col-span-1"></div>
-                {DAYS.map(day => (
-                  <div key={day} className="text-center font-medium text-sm text-gray-700">
+                {DAYS.map((day) => (
+                  <div
+                    key={day}
+                    className="text-center font-medium text-sm text-gray-700"
+                  >
                     {day}
                   </div>
                 ))}
-                
-                {TIME_SLOTS.map(time => (
+
+                {TIME_SLOTS.map((time) => (
                   <React.Fragment key={time}>
                     <div className="text-right text-sm text-gray-500 pr-2 py-1">
                       {time}
                     </div>
-                    {DAYS.map(day => {
+                    {DAYS.map((day) => {
                       const slotString = `${day} ${time}`;
                       const isSelected = selectedSlots.includes(slotString);
-                      const isExisting = isExistingSlot(editingCourseIndex, slotString);
-                      
+                      const isExisting = isExistingSlot(
+                        editingCourseIndex,
+                        slotString
+                      );
+
                       return (
                         <button
                           key={`${day}-${time}`}
@@ -257,14 +283,18 @@ function GenerateRoutine() {
                           disabled={isExisting}
                           className={`w-full h-8 rounded-md transition-colors ${
                             isSelected
-                              ? 'bg-indigo-600 hover:bg-indigo-700'
+                              ? "bg-indigo-600 hover:bg-indigo-700"
                               : isExisting
-                              ? 'bg-green-100'
-                              : 'bg-gray-100 hover:bg-gray-200'
+                              ? "bg-green-100"
+                              : "bg-gray-100 hover:bg-gray-200"
                           }`}
                         >
-                          {isSelected && <Check className="h-4 w-4 mx-auto text-white" />}
-                          {isExisting && <Check className="h-4 w-4 mx-auto text-green-600" />}
+                          {isSelected && (
+                            <Check className="h-4 w-4 mx-auto text-white" />
+                          )}
+                          {isExisting && (
+                            <Check className="h-4 w-4 mx-auto text-green-600" />
+                          )}
                         </button>
                       );
                     })}
@@ -276,7 +306,9 @@ function GenerateRoutine() {
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-100 rounded-md"></div>
-                    <span className="text-sm text-gray-600">Already selected</span>
+                    <span className="text-sm text-gray-600">
+                      Already selected
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-indigo-600 rounded-md"></div>
@@ -323,29 +355,50 @@ function GenerateRoutine() {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="courseCode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Course Code
                   </label>
                   <input
                     type="text"
                     id="courseCode"
                     value={newCourse.course_code}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, course_code: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    onChange={(e) =>
+                      setNewCourse((prev) => ({
+                        ...prev,
+                        course_code: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full h-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-2 text-lg"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="credits" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="credits"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Credits
                   </label>
-                  <input
-                    type="number"
+                  <select
                     id="credits"
                     value={newCourse.credits}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, credits: parseInt(e.target.value) }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
+                    onChange={(e) =>
+                      setNewCourse((prev) => ({
+                        ...prev,
+                        credits: parseFloat(e.target.value),
+                      }))
+                    }
+                    className="mt-1 block w-full h-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-2 text-lg"
+                  >
+                    <option value={1}>1</option>
+                    <option value={1.5}>1.5</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                  </select>
                 </div>
 
                 <div className="flex items-center">
@@ -353,10 +406,18 @@ function GenerateRoutine() {
                     type="checkbox"
                     id="isLab"
                     checked={newCourse.is_lab}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, is_lab: e.target.checked }))}
+                    onChange={(e) =>
+                      setNewCourse((prev) => ({
+                        ...prev,
+                        is_lab: e.target.checked,
+                      }))
+                    }
                     className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="isLab" className="ml-2 block text-sm text-gray-900">
+                  <label
+                    htmlFor="isLab"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
                     Is Lab Course
                   </label>
                 </div>
