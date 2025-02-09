@@ -8,9 +8,9 @@ import ViewRoutine from '../../components/admin/ViewRoutine';
 
 export default function AdminPage() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-gray-100">
       <AdminSidebar />
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <Routes>
           {/* Redirect from '/admin' to '/admin/teachers' */}
           <Route index element={<Navigate to="teachers" />} />
