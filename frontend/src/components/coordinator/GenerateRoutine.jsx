@@ -221,7 +221,6 @@ function GenerateRoutine() {
 
       <div className="mt-8">
         <RoutineGeneratorr
-        <RoutineGeneratorr
           courses={formatCoursesForRoutine().regularCourses}
           labCourses={formatCoursesForRoutine().labCourses}
         />
