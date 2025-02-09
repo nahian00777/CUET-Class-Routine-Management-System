@@ -61,7 +61,6 @@ const loginUser = asyncHandler(async (req, res) => {
   */
   // 1st step :
   const { username, password, role } = req.body;
-  console.log(role)
   // 2nd step:
   if (!username) {
     throw new ApiError(400, "username is required");
@@ -79,11 +78,10 @@ const loginUser = asyncHandler(async (req, res) => {
     });
   } else if (role === "admin") {
     user = await User.findOne({
-      $or: [{ username }],
+      $or: [{ email: username }],
     });
   }
-
-
+  
   if (!user) {
     throw new ApiError(404, "User not found");
   }
