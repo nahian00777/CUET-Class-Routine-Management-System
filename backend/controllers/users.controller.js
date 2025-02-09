@@ -78,7 +78,7 @@ const loginUser = asyncHandler(async (req, res) => {
     });
   } else if (role === "admin") {
     user = await User.findOne({
-      $or: [{ email: username }],
+      $or: [{ username }],
     });
   }
   
