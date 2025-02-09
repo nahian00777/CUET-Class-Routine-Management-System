@@ -3,7 +3,7 @@ import { Trash2, X, Plus, Check } from 'lucide-react';
 import RoutineGeneratorr from './RoutineGeneratorr';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
-const TIME_SLOTS = ['8:10','9:00', '9:50', '11:00', '11:50', '12:40', '2:30', '3:20', '4:10'];
+const TIME_SLOTS = ['8:10', '9:00', '9:50', '11:00', '11:50', '12:40', '2:30', '3:20', '4:10'];
 
 function GenerateRoutine() {
   const [courses, setCourses] = useState([]);
@@ -65,7 +65,7 @@ function GenerateRoutine() {
           acc[day].push(`${time}-${add50Minutes(time)}`);
           return acc;
         }, {});
-  
+
         // Convert to the required format
         return {
           course_code: course.course_code,
@@ -75,7 +75,7 @@ function GenerateRoutine() {
           ),
         };
       });
-  
+
     const labCourses = courses
       .filter(course => course.is_lab)
       .map(course => {
@@ -86,7 +86,7 @@ function GenerateRoutine() {
           acc[day].push(`${time}-${add50Minutes(time)}`);
           return acc;
         }, {});
-  
+
         // Convert to the required format
         return {
           course_code: course.course_code,
@@ -97,10 +97,10 @@ function GenerateRoutine() {
           ]),
         };
       });
-  
+
     return { regularCourses, labCourses };
   };
-  
+
   // Helper function to add 50 minutes to a time string
   const add50Minutes = (time) => {
     const [hour, minute] = time.split(':').map(Number);
@@ -206,7 +206,7 @@ function GenerateRoutine() {
       </div>
 
       <div className="mt-8">
-        <RoutineGeneratorr 
+        <RoutineGeneratorr
           courses={formatCoursesForRoutine().regularCourses}
           labCourses={formatCoursesForRoutine().labCourses}
         />
@@ -231,7 +231,7 @@ function GenerateRoutine() {
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-6 gap-2 mb-6">
                 <div className="col-span-1"></div>
                 {DAYS.map(day => (
@@ -239,7 +239,7 @@ function GenerateRoutine() {
                     {day}
                   </div>
                 ))}
-                
+
                 {TIME_SLOTS.map(time => (
                   <React.Fragment key={time}>
                     <div className="text-right text-sm text-gray-500 pr-2 py-1">
@@ -249,19 +249,18 @@ function GenerateRoutine() {
                       const slotString = `${day} ${time}`;
                       const isSelected = selectedSlots.includes(slotString);
                       const isExisting = isExistingSlot(editingCourseIndex, slotString);
-                      
+
                       return (
                         <button
                           key={`${day}-${time}`}
                           onClick={() => toggleTimeSlot(day, time)}
                           disabled={isExisting}
-                          className={`w-full h-8 rounded-md transition-colors ${
-                            isSelected
+                          className={`w-full h-8 rounded-md transition-colors ${isSelected
                               ? 'bg-indigo-600 hover:bg-indigo-700'
                               : isExisting
-                              ? 'bg-green-100'
-                              : 'bg-gray-100 hover:bg-gray-200'
-                          }`}
+                                ? 'bg-green-100'
+                                : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
                         >
                           {isSelected && <Check className="h-4 w-4 mx-auto text-white" />}
                           {isExisting && <Check className="h-4 w-4 mx-auto text-green-600" />}
@@ -331,7 +330,7 @@ function GenerateRoutine() {
                     id="courseCode"
                     value={newCourse.course_code}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, course_code: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
                   />
                 </div>
 
@@ -344,7 +343,7 @@ function GenerateRoutine() {
                     id="credits"
                     value={newCourse.credits}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, credits: parseInt(e.target.value) }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
                   />
                 </div>
 

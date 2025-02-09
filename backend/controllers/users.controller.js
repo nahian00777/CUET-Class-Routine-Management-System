@@ -1,6 +1,8 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/users.model.js";
+import { Coordinator } from "../models/coordinators.model.js";
+import { Teacher } from "../models/teachers.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -58,16 +60,29 @@ const loginUser = asyncHandler(async (req, res) => {
     8. return success response
   */
   // 1st step :
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
+  console.log(role)
   // 2nd step:
   if (!username) {
     throw new ApiError(400, "username is required");
   }
 
   // 3rd step :
-  const user = await User.findOne({
-    $or: [{ username }],
-  });
+  var user = null;
+  if (role === "coordinator") {
+    user = await Coordinator.findOne({
+      $or: [{ email: username }],
+    });
+  } else if (role === "teacher") {
+    user = await Teacher.findOne({
+      $or: [{ email: username }],
+    });
+  } else if (role === "admin") {
+    user = await User.findOne({
+      $or: [{ username }],
+    });
+  }
+
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -92,9 +107,20 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 
   // hadling error
-  const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  var loggedInUser = null;
+  if (role === "coordinator") {
+    loggedInUser = await Coordinator.findById(user._id).select(
+      "-password -refreshToken"
+    );
+  } else if (role === "teacher") {
+    loggedInUser = await Teacher.findById(user._id).select(
+      "-password -refreshToken"
+    );
+  } else if (role === "admin") {
+    loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+    );
+  }
   if (!loggedInUser) {
     throw new ApiError(500, "User login failed");
   }

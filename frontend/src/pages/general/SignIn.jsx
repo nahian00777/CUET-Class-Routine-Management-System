@@ -41,6 +41,7 @@ function SignIn() {
         {
           username: email,
           password: password,
+          role: role,
         }
       );
 
@@ -59,7 +60,11 @@ function SignIn() {
       }
     } catch (error) {
       console.error("Error logging in:", error);
-      setError("Login failed. Please check your credentials.");
+      console.log("Role:", role);
+      if(role === "") 
+        setError("Login failed. Please select a role.");
+      else
+        setError("Login failed. Please check your credentials.");
     }
   };
 

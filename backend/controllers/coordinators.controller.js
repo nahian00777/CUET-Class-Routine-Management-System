@@ -32,9 +32,10 @@ const addCoordinator = asyncHandler(async (req, res) => {
   // 2nd step :
   if (
     [coordinatorName, coordinatorID, password].some(
-      (field) => !field.trim() === ""
-    )
-  ) {
+      (field) => !field || field.trim() === ""
+    ))
+   {
+    console.log("coordinatorName:", coordinatorName);
     throw new ApiError(400, "All fields are required");
   }
   // 3rd step :
