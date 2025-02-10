@@ -358,7 +358,7 @@ function GenerateRoutine() {
                     id="courseCode"
                     value={newCourse.course_code}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, course_code: e.target.value }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-1 pl-2"
                   />
                 </div>
 
@@ -371,7 +371,7 @@ function GenerateRoutine() {
                     id="credits"
                     value={newCourse.credits}
                     onChange={(e) => setNewCourse(prev => ({ ...prev, credits: parseInt(e.target.value) }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-3"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-1 pl-2"
                   />
                 </div>
 

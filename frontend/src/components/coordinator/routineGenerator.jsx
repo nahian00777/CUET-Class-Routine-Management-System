@@ -1,9 +1,80 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
+const findCourse = async (courseId) => {
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/v1/courses/getCourseById",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ courseId }), // Send courseId in the request body
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch course");
+    }
+
+    const course = await response.json();
+    return course; // Return the course data
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    throw error; // Re-throw the error for further handling if needed
+  }
+};
+
+const storeScheduleData = async (
+  course,
+  department,
+  timeSlots,
+  section,
+  level,
+  term
+) => {
+  try {
+    const response = await fetch(
+      "http://localhost:3000/api/v1/schedules/setSchedule",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          course,
+          timeSlots,
+          department,
+          section,
+          level,
+          term,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to store schedule data");
+    }
+
+    const result = await response.json();
+    console.log("Schedule stored successfully:", result);
+  } catch (error) {
+    console.error("Error storing schedule data:", error);
+  }
+};
+
 // Define available days and time slots
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const allTimeSlots = [
-  "8:10-9:00", "9:00-9:50", "9:50-10:40", "11:00-11:50", "11:50-12:40", "12:40-1:30", "2:30-3:20", "3:20-4:10", "4:10-5:00"
+  "8:10-9:00",
+  "9:00-9:50",
+  "9:50-10:40",
+  "11:00-11:50",
+  "11:50-12:40",
+  "12:40-1:30",
+  "2:30-3:20",
+  "3:20-4:10",
+  "4:10-5:00",
 ];
 
 // Define theory courses with their preferred time slots
@@ -15,8 +86,8 @@ export const courses = [
       ["Tuesday", "9:00-9:50"],
       ["Sunday", "11:00-11:50"],
       ["Monday", "11:50-12:40"],
-      ["Wednesday", "9:50-10:40"]
-    ]
+      ["Wednesday", "9:50-10:40"],
+    ],
   },
   {
     course_code: "222",
@@ -25,9 +96,9 @@ export const courses = [
       ["Wednesday", "11:00-11:50"],
       ["Thursday", "9:00-9:50"],
       ["Sunday", "9:00-9:50"],
-      ["Monday", "9:50-10:40"]
-    ]
-  }
+      ["Monday", "9:50-10:40"],
+    ],
+  },
 ];
 
 // Define lab courses with their preferred time slots
@@ -38,8 +109,8 @@ export const labCourses = [
     preferred_slots: [
       ["Sunday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]],
       ["Monday", ["11:00-11:50", "11:50-12:40", "12:40-1:30"]],
-      ["Monday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]]
-    ]
+      ["Monday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]],
+    ],
   },
   {
     course_code: "55",
@@ -47,9 +118,9 @@ export const labCourses = [
     preferred_slots: [
       ["Wednesday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]],
       ["Wednesday", ["11:00-11:50", "11:50-12:40", "12:40-1:30"]],
-      ["Thursday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]]
-    ]
-  }
+      ["Thursday", ["2:30-3:20", "3:20-4:10", "4:10-5:00"]],
+    ],
+  },
 ];
 
 // Function to generate routines for multiple sections
@@ -143,7 +214,9 @@ export const generateRoutine = (courses, labCourses, numSections) => {
 
         // Check if all slots in the valid combination are available in the section and globally
         if (
-          validCombination.every((slot) => !usedSlots[section][day].has(slot)) &&
+          validCombination.every(
+            (slot) => !usedSlots[section][day].has(slot)
+          ) &&
           validCombination.every((slot) => !globalUsedSlots[day].has(slot))
         ) {
           let conflict = false;
@@ -152,8 +225,13 @@ export const generateRoutine = (courses, labCourses, numSections) => {
           for (const otherSection in routine) {
             if (otherSection === section) continue;
 
-            for (const [otherCourse, otherDay, otherTimeSlot] of routine[otherSection]) {
-              if (otherDay === day && validCombination.includes(otherTimeSlot)) {
+            for (const [otherCourse, otherDay, otherTimeSlot] of routine[
+              otherSection
+            ]) {
+              if (
+                otherDay === day &&
+                validCombination.includes(otherTimeSlot)
+              ) {
                 conflict = true;
                 break;
               }
@@ -202,8 +280,48 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
   const TABLE_HEIGHT = ROW_HEIGHT * (days.length + 2); // Total table height (header + rows)
 
   // Loop through each section and create a new page for it
+  // console.log("Routine: ", routine);
   for (const section in routine) {
     console.log(`Processing section: ${section}`); // Debugging log
+    const sec = section;
+    // const courseId = routine[section][0][0];
+    // console.log(routine[section][0]);
+    // const day = routine[section][0][1];
+    // const time = routine[section][0][2];
+    // const level = "Level 1";
+    // const term = "Term 1";
+    // const department = "CSE";
+    // const [startTime, endTime] = time.split("-");
+
+    // Create a time slot object
+    // const timeSlots = {
+    //   day: day,
+    //   startTime: startTime,
+    //   endTime: endTime,
+    // };
+
+    // const course = findCourse(courseId);
+
+    // const scheduleData = new Schedule({
+    //   course: course, // Ensure this is a valid ObjectId
+    //   timeSlots: [timeSlot],
+    //   instructor: "Sojib Bhattacharjee", // Replace with actual data
+    //   department: department, // Replace with actual data
+    //   level: level,
+    //   term: term,
+    //   section: sec,
+    //   room: "3204", // Replace with actual data
+    // });
+
+    // await storeScheduleData(
+    //   course,
+    //   timeSlots,
+    //   department,
+    //   section,
+    //   level,
+    //   term
+    // );
+    // console.log(routine[section][0][0])
 
     // Create a new page for the current section
     const currentPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);

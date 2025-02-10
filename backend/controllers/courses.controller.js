@@ -13,6 +13,22 @@ const getCourses = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "Courses fetched successfully"));
 });
 
+export const getCourseByID = asyncHandler(async (req, res) => {
+  const { courseId } = req.body;
+
+  if (!courseId) {
+    return res.status(400).json({ message: "Invalid course ID" });
+  }
+
+  const course = await Course.findOne({ courseID: courseId });
+  if (!course) {
+    return res.status(404).json({ message: "Course not found" });
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, course, "Course get successfully"));
+});
+
 const addCourse = asyncHandler(async (req, res) => {
   const { courseID, courseName, creditHours } = req.body;
 
