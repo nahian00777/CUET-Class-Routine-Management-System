@@ -18,7 +18,12 @@ const findCourse = async (courseId) => {
     }
 
     const course = await response.json();
-    return course; // Return the course data
+    if (!course) {
+      throw new Error("Course not found");
+    }
+    // console.log("Course fetched successfully:", course.data._id);
+    // console.log("Course fetched successfully:", course._id);
+    return course.data._id; // Return the course data
   } catch (error) {
     console.error("Error fetching course:", error);
     throw error; // Re-throw the error for further handling if needed
@@ -27,8 +32,8 @@ const findCourse = async (courseId) => {
 
 const storeScheduleData = async (
   course,
-  department,
   timeSlots,
+  department,
   section,
   level,
   term
@@ -284,24 +289,25 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
   for (const section in routine) {
     console.log(`Processing section: ${section}`); // Debugging log
     const sec = section;
-    // const courseId = routine[section][0][0];
-    // console.log(routine[section][0]);
-    // const day = routine[section][0][1];
-    // const time = routine[section][0][2];
-    // const level = "Level 1";
-    // const term = "Term 1";
-    // const department = "CSE";
-    // const [startTime, endTime] = time.split("-");
+    console.log("Section ID", routine[section]);
+    const courseId = routine[section][0][0];
+    const day = routine[section][0][1];
+    const time = routine[section][0][2];
+    const level = "Level 1";
+    const term = "Term 1";
+    const department = "CSE";
+    const [startTime, endTime] = time.split("-");
 
     // Create a time slot object
-    // const timeSlots = {
-    //   day: day,
-    //   startTime: startTime,
-    //   endTime: endTime,
-    // };
+    const timeSlots = {
+      day: day,
+      startTime: startTime,
+      endTime: endTime,
+    };
 
-    // const course = findCourse(courseId);
-
+    const course = findCourse(courseId);
+    const courseData = await course;
+    // console.log("Course ID:", courseData);
     // const scheduleData = new Schedule({
     //   course: course, // Ensure this is a valid ObjectId
     //   timeSlots: [timeSlot],
@@ -312,16 +318,16 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
     //   section: sec,
     //   room: "3204", // Replace with actual data
     // });
-
-    // await storeScheduleData(
-    //   course,
-    //   timeSlots,
-    //   department,
-    //   section,
-    //   level,
-    //   term
-    // );
-    // console.log(routine[section][0][0])
+    // console.log(routine[section][0][0]);
+    await storeScheduleData(
+      courseData,
+      timeSlots,
+      department,
+      section,
+      level,
+      term
+    );
+    // console.log(routine[section][0][0]);
 
     // Create a new page for the current section
     const currentPage = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);

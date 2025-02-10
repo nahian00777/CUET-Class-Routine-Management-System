@@ -12,6 +12,7 @@ const scheduleSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: [
+          "Sunday",
           "Monday",
           "Tuesday",
           "Wednesday",
