@@ -1,9 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Trash2, X, Plus, Check } from "lucide-react";
 import RoutineGeneratorr from "./RoutineGeneratorr";
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
-const TIME_SLOTS = ['8:10', '9:00', '9:50', '11:00', '11:50', '12:40', '2:30', '3:20', '4:10'];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const TIME_SLOTS = [
+  "8:10",
+  "9:00",
+  "9:50",
+  "11:00",
+  "11:50",
+  "12:40",
+  "2:30",
+  "3:20",
+  "4:10",
+];
 
 function GenerateRoutine() {
   const [courses, setCourses] = useState([]);
@@ -18,16 +28,98 @@ function GenerateRoutine() {
     time_slots: [],
   });
 
-  const handleAddCourse = () => {
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/v1/schedules/findSchedule",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ instructor: "jiangly" }),
+          }
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          const courseMap = {};
+
+          result.data.forEach((schedule) => {
+            const courseId = schedule.course.courseID;
+            if (!courseMap[courseId]) {
+              courseMap[courseId] = {
+                course_code: courseId,
+                course_name: schedule.course.courseName,
+                credits: schedule.course.creditHours,
+                is_lab: false, // Assuming you determine this elsewhere
+                time_slots: [],
+              };
+            }
+            schedule.timeSlots.forEach((slot) => {
+              courseMap[courseId].time_slots.push(
+                `${slot.day} ${slot.startTime}`
+              );
+            });
+          });
+
+          const formattedCourses = Object.values(courseMap);
+          setCourses(formattedCourses);
+        } else {
+          console.error("Failed to fetch courses");
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  const handleAddCourse = async () => {
     if (!newCourse.course_code) return;
-    setCourses([...courses, { ...newCourse, time_slots: [] }]);
-    setNewCourse({
-      course_code: "",
-      credits: 0,
-      is_lab: false,
-      time_slots: [],
-    });
-    setShowNewCourseForm(false);
+
+    // Check if the course is already in the list
+    const courseExists = courses.some(
+      (course) => course.course_code === newCourse.course_code
+    );
+
+    if (courseExists) {
+      alert("The course is already added");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/v1/courses/getCourseById",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ courseId: newCourse.course_code }),
+        }
+      );
+
+      if (response.status !== 200) {
+        alert("The course is not registered");
+        return;
+      }
+
+      // If the course is found, add it to the list
+      setCourses([...courses, { ...newCourse, time_slots: [] }]);
+      setNewCourse({
+        course_code: "",
+        credits: 0,
+        is_lab: false,
+        time_slots: [],
+      });
+      setShowNewCourseForm(false);
+    } catch (error) {
+      console.error("Error checking course:", error);
+      alert("An error occurred while checking the course");
+    }
   };
 
   const toggleTimeSlot = (day, time) => {
@@ -43,15 +135,45 @@ function GenerateRoutine() {
     return courses[courseIndex].time_slots.includes(slot);
   };
 
-  const confirmSelectedSlots = () => {
-    const newCourses = [...courses];
-    newCourses[editingCourseIndex].time_slots = [
-      ...newCourses[editingCourseIndex].time_slots,
-      ...selectedSlots,
-    ];
-    setCourses(newCourses);
-    setShowModal(false);
-    setSelectedSlots([]);
+  const confirmSelectedSlots = async () => {
+    const updatedCourse = {
+      ...courses[editingCourseIndex],
+      time_slots: [...courses[editingCourseIndex].time_slots, ...selectedSlots],
+    };
+
+    try {
+      // Commenting out the API call
+      /*
+    const response = await fetch(
+      `http://localhost:3000/api/v1/schedules/updateTimeSlot`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseId: updatedCourse.course_code,
+          time_slots: updatedCourse.time_slots,
+        }),
+      }
+    );
+
+    if (response.ok) {
+    */
+      // Directly update the local state
+      const newCourses = [...courses];
+      newCourses[editingCourseIndex] = updatedCourse;
+      setCourses(newCourses);
+      setShowModal(false);
+      setSelectedSlots([]);
+      /*
+    } else {
+      console.error("Failed to update course time slots");
+    }
+    */
+    } catch (error) {
+      console.error("Error updating course time slots:", error);
+    }
   };
 
   const formatCoursesForRoutine = () => {
@@ -66,7 +188,6 @@ function GenerateRoutine() {
           return acc;
         }, {});
 
-
         // Convert to the required format
         return {
           course_code: course.course_code,
@@ -76,7 +197,6 @@ function GenerateRoutine() {
           ),
         };
       });
-
 
     const labCourses = courses
       .filter((course) => course.is_lab)
@@ -89,7 +209,6 @@ function GenerateRoutine() {
           return acc;
         }, {});
 
-
         // Convert to the required format
         return {
           course_code: course.course_code,
@@ -100,10 +219,8 @@ function GenerateRoutine() {
         };
       });
 
-
     return { regularCourses, labCourses };
   };
-
 
   // Helper function to add 50 minutes to a time string
   const add50Minutes = (time) => {
@@ -247,7 +364,6 @@ function GenerateRoutine() {
                 </button>
               </div>
 
-
               <div className="grid grid-cols-6 gap-2 mb-6">
                 <div className="col-span-1"></div>
                 {DAYS.map((day) => (
@@ -259,7 +375,7 @@ function GenerateRoutine() {
                   </div>
                 ))}
 
-                {TIME_SLOTS.map(time => (
+                {TIME_SLOTS.map((time) => (
                   <React.Fragment key={time}>
                     <div className="text-right text-sm text-gray-500 pr-2 py-1">
                       {time}
@@ -267,19 +383,23 @@ function GenerateRoutine() {
                     {DAYS.map((day) => {
                       const slotString = `${day} ${time}`;
                       const isSelected = selectedSlots.includes(slotString);
-                      const isExisting = isExistingSlot(editingCourseIndex, slotString);
+                      const isExisting = isExistingSlot(
+                        editingCourseIndex,
+                        slotString
+                      );
 
                       return (
                         <button
                           key={`${day}-${time}`}
                           onClick={() => toggleTimeSlot(day, time)}
                           disabled={isExisting}
-                          className={`w-full h-8 rounded-md transition-colors ${isSelected
-                              ? 'bg-indigo-600 hover:bg-indigo-700'
+                          className={`w-full h-8 rounded-md transition-colors ${
+                            isSelected
+                              ? "bg-indigo-600 hover:bg-indigo-700"
                               : isExisting
-                                ? 'bg-green-100'
-                                : 'bg-gray-100 hover:bg-gray-200'
-                            }`}
+                              ? "bg-green-100"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
                         >
                           {isSelected && (
                             <Check className="h-4 w-4 mx-auto text-white" />
@@ -357,20 +477,33 @@ function GenerateRoutine() {
                     type="text"
                     id="courseCode"
                     value={newCourse.course_code}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, course_code: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCourse((prev) => ({
+                        ...prev,
+                        course_code: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-1 pl-2"
                   />
                 </div>
 
                 <div>
-                <label htmlFor="credits" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="credits"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Credits
                   </label>
                   <input
                     type="number"
                     id="credits"
                     value={newCourse.credits}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, credits: parseInt(e.target.value) }))}
+                    onChange={(e) =>
+                      setNewCourse((prev) => ({
+                        ...prev,
+                        credits: parseInt(e.target.value),
+                      }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg py-1 pl-2"
                   />
                 </div>

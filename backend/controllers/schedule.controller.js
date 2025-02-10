@@ -70,3 +70,35 @@ export const setSchedules = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const findSchedule = asyncHandler(async (req, res) => {
+  const { instructor } = req.body;
+  const schedule = await Schedule.find({ instructor: instructor }).populate(
+    "course"
+  );
+  if (!schedule) {
+    throw new ApiError(404, "Schedule not found");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, schedule, "Schedule fetched successfully"));
+});
+
+export const updateTimeSlot = asyncHandler(async (req, res) => {
+  const { courseId, timeSlots } = req.body;
+  const courseObjectId = await Course.findOne({ courseID: courseId });
+  if (!courseObjectId) {
+    throw new ApiError(404, "Course not found");
+  }
+  const schedule = await Schedule.findOneAndUpdate(
+    { course: courseObjectId },
+    { timeSlots: timeSlots },
+    { new: true }
+  );
+  if (!schedule) {
+    throw new ApiError(404, "Schedule not found");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, schedule, "Schedule updated successfully"));
+});

@@ -1,10 +1,12 @@
 import { Router } from "express";
 // prettier-ignore
-import { getSchedules, setSchedules } from "../controllers/schedule.controller.js";
+import { findSchedule, getSchedules, setSchedules, updateTimeSlot } from "../controllers/schedule.controller.js";
 
 const scheduleRouter = Router();
 
 scheduleRouter.route("/setSchedule").post(setSchedules);
 scheduleRouter.route("/getSchedule").get(getSchedules);
+scheduleRouter.route("/findSchedule").post(findSchedule);
+scheduleRouter.route("/updateTimeSlot").patch(updateTimeSlot);
 
 export default scheduleRouter;
