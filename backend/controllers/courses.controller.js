@@ -69,4 +69,20 @@ const updateCourse = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, course, "User updated successfully"));
 });
 
-export { getCourses, addCourse, updateCourse };
+const deleteCourse = asyncHandler(async (req, res) => {
+  const { courseID } = req.body; // Ensure this matches the frontend
+
+  if (!courseID) {
+    return res.status(400).json({ message: "Invalid course ID" });
+  }
+
+  const course = await Course.findOneAndDelete({ courseID: courseID });
+  if (!course) {
+    return res.status(404).json({ message: "Course not found" });
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, course, "Course deleted successfully"));
+});
+
+export { getCourses, addCourse, updateCourse, deleteCourse };

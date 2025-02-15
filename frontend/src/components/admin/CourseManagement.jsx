@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Edit2, Save } from "lucide-react";
+import { Plus, Edit2, Save, Trash2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -75,6 +75,19 @@ export default function CourseManagement() {
       courseName: course.courseName,
       creditHours: course.creditHours,
     });
+  };
+
+  const handleDelete = async (courseID) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/v1/courses/deleteCourse`, {
+        data: { courseID },
+      });
+      setCourses(courses.filter((course) => course.courseID !== courseID));
+      toast.success("Course deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting course:", error);
+      toast.error("Error deleting course.");
+    }
   };
 
   return (
@@ -181,12 +194,18 @@ export default function CourseManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {course.creditHours}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap flex gap-2">
                   <button
                     onClick={() => handleEdit(course)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(course.courseID)}
+                    className="pl-4 text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </td>
               </tr>

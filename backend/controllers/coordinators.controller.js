@@ -33,8 +33,8 @@ const addCoordinator = asyncHandler(async (req, res) => {
   if (
     [coordinatorName, coordinatorID, password].some(
       (field) => !field || field.trim() === ""
-    ))
-   {
+    )
+  ) {
     console.log("coordinatorName:", coordinatorName);
     throw new ApiError(400, "All fields are required");
   }
@@ -300,10 +300,32 @@ const updateCoordinator = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, coordinator, "User updated successfully"));
 });
+
+const deleteCoordinator = asyncHandler(async (req, res) => {
+  const { coordinatorID } = req.body;
+
+  if (!coordinatorID) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const coordinator = await Coordinator.findOneAndDelete({
+    coordinatorID,
+  });
+
+  if (!coordinator) {
+    throw new ApiError(500, "User deletion failed");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "User deleted successfully"));
+});
+
 export {
   getCoordinator,
   addCoordinator,
   loginCoordinator,
   logoutCoordinator,
   updateCoordinator,
+  deleteCoordinator,
 };

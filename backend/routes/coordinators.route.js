@@ -2,6 +2,7 @@ import { Router } from "express";
 // prettier-ignore
 import {
     addCoordinator,
+    deleteCoordinator,
     getCoordinator,
     loginCoordinator,
     logoutCoordinator,
@@ -24,6 +25,7 @@ coordinatorRouter.route("/getCoordinator").get(getCoordinator);
 // coordinatorRouter.route("/changePassword").patch(verifyJWT, changeCurrentPassword);
 
 coordinatorRouter.route("/updateCoordinator").patch(updateCoordinator);
+coordinatorRouter.route("/deleteCoordinator").delete(deleteCoordinator);
 
 // coordinatorRouter.route("/getCurrentUser").get(verifyJWT, getCurrentUser);
 export default coordinatorRouter;

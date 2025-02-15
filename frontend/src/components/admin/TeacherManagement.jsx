@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Edit2, Save } from "lucide-react";
+import { Plus, Edit2, Save, Trash2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -79,6 +79,24 @@ export default function TeacherManagement() {
     });
   };
 
+  const handleDelete = async (teacherID) => {
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/v1/teachers/deleteTeacher`,
+        {
+          data: { teacherID },
+        }
+      );
+      setTeachers(
+        teachers.filter((teacher) => teacher.teacherID !== teacherID)
+      );
+      toast.success("Teacher deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting teacher:", error);
+      toast.error("Error deleting teacher.");
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Teachers</h1>
@@ -119,20 +137,22 @@ export default function TeacherManagement() {
             />
           </div>
           <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
             <select
               value={formData.department}
-              onChange={e => setQuery({ ...query, level: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, department: e.target.value })
+              }
               className="w-full p-2 border rounded"
               required
             >
               <option value="">Select Department</option>
-              <option value="1">CSE</option>
-              <option value="2">EEE</option>
-              <option value="3">ME</option>
-              <option value="4">CE</option>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="ME">ME</option>
+              <option value="CE">CE</option>
             </select>
           </div>
         </div>
@@ -179,12 +199,18 @@ export default function TeacherManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {teacher.department}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap flex gap-2">
                   <button
                     onClick={() => handleEdit(teacher)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(teacher.teacherID)}
+                    className="pl-4 text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </td>
               </tr>

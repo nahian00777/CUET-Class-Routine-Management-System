@@ -295,4 +295,22 @@ const updateTeacher = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, teacher, "User updated successfully"));
 });
-export { addTeacher, loginTeacher, logoutTeacher, getTeacher, updateTeacher };
+
+const deleteTeacher = asyncHandler(async (req, res) => {
+  const { teacherID } = req.body;
+
+  if (!teacherID) {
+    throw new ApiError(400, "Invalid teacher ID");
+  }
+
+  const teacher = await Teacher.findOneAndDelete({ teacherID: teacherID });
+  if (!teacher) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "User deleted successfully"));
+});
+
+export { addTeacher, loginTeacher, logoutTeacher, getTeacher, updateTeacher , deleteTeacher};

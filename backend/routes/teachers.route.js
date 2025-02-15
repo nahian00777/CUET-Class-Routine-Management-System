@@ -2,6 +2,7 @@ import { Router } from "express";
 // prettier-ignore
 import {
     addTeacher,
+    deleteTeacher,
     getTeacher,
     loginTeacher,
     logoutTeacher,
@@ -24,6 +25,8 @@ teacherRouter.route("/getTeacher").get(getTeacher);
 // teacherRouter.route("/changePassword").patch(verifyJWT, changeCurrentPassword);
 
 teacherRouter.route("/updateTeacher").patch(updateTeacher);
+
+teacherRouter.route("/deleteTeacher").delete(deleteTeacher);
 
 // teacherRouter.route("/getCurrentUser").get(verifyJWT, getCurrentUser);
 export default teacherRouter;

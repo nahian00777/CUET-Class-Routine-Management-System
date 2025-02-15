@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Edit2, Save } from "lucide-react";
+import { Plus, Edit2, Save, Trash2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -90,6 +90,26 @@ export default function CoordinatorManagement() {
     });
   };
 
+  const handleDelete = async (coordinatorID) => {
+    try {
+      await axios.delete(
+        `http://localhost:3000/api/v1/coordinators/deleteCoordinator`,
+        {
+          data: { coordinatorID },
+        }
+      );
+      setCoordinators(
+        coordinators.filter(
+          (coordinator) => coordinator.coordinatorID !== coordinatorID
+        )
+      );
+      toast.success("Coordinator deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting coordinator:", error);
+      toast.error("Error deleting coordinator.");
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Coordinators</h1>
@@ -133,29 +153,18 @@ export default function CoordinatorManagement() {
             </label>
             <select
               value={formData.department}
-              onChange={e => setQuery({ ...query, level: e.target.value })}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="">Select Department</option>
-              <option value="1">CSE</option>
-              <option value="2">EEE</option>
-              <option value="3">ME</option>
-              <option value="4">CE</option>
-            </select>
-
-            {/* <label className="block text-sm font-medium text-gray-700 mb-1">
-              Department
-            </label>
-            <input
-              type="text"
-              value={formData.department}
               onChange={(e) =>
                 setFormData({ ...formData, department: e.target.value })
               }
               className="w-full p-2 border rounded"
               required
-            /> */}
+            >
+              <option value="">Select Department</option>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="ME">ME</option>
+              <option value="CE">CE</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -221,12 +230,18 @@ export default function CoordinatorManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {coordinator.assignedBatch || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap flex gap-2">
                   <button
                     onClick={() => handleEdit(coordinator)}
                     className="text-blue-600 hover:text-blue-900"
                   >
                     <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(coordinator.coordinatorID)}
+                    className="pl-4 text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </td>
               </tr>
