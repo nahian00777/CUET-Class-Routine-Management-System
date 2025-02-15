@@ -153,6 +153,10 @@ export default function TeacherManagement() {
               <option value="EEE">EEE</option>
               <option value="ME">ME</option>
               <option value="CE">CE</option>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="ME">ME</option>
+              <option value="CE">CE</option>
             </select>
           </div>
         </div>
