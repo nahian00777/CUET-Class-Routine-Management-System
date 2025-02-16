@@ -1,82 +1,151 @@
-import React, { useState } from 'react';
-import { Download } from 'lucide-react';
-import QueryForm from '../shared/QueryForm';
+import React from "react";
 
-const mockRoutine = [
-  {
-    day: 'Sunday',
-    time: '8:00 AM',
-    courseId: 'CSE101',
-    teacherId: 'T1',
-    room: '301',
-  },
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+const allTimeSlots = [
+  "8:10-9:00",
+  "9:00-9:50",
+  "9:50-10:40",
+  "11:00-11:50",
+  "11:50-12:40",
+  "12:40-1:30",
+  "2:30-3:20",
+  "3:20-4:10",
+  "4:10-5:00",
 ];
 
-export default function ViewRoutine() {
-  const [query, setQuery] = useState({
-    department: '',
-    level: '',
-    term: '',
-  });
+const displayColumns = [
+  { type: "time", label: "8:10-9:00", gridIndex: 0 },
+  { type: "time", label: "9:00-9:50", gridIndex: 1 },
+  { type: "time", label: "9:50-10:40", gridIndex: 2 },
+  { type: "gap", label: "Break Time" },
+  { type: "time", label: "11:00-11:50", gridIndex: 3 },
+  { type: "time", label: "11:50-12:40", gridIndex: 4 },
+  { type: "time", label: "12:40-1:30", gridIndex: 5 },
+  { type: "gap", label: "Lunch Time" },
+  { type: "time", label: "2:30-3:20", gridIndex: 6 },
+  { type: "time", label: "3:20-4:10", gridIndex: 7 },
+  { type: "time", label: "4:10-5:00", gridIndex: 8 },
+];
 
-  const handleDownload = () => {
-    console.log('Downloading routine as PDF');
+const ViewRoutine = () => {
+  // Sample routine object with two sections.
+  const routine = {
+    A: [
+      { course: "111", day: "Sunday", time: "11:00-11:50", type: "theory", span: 1 },
+      { course: "222", day: "Monday", time: "9:50-10:40", type: "theory", span: 1 },
+      { course: "44", day: "Sunday", time: "2:30-3:20", type: "lab", span: 3 },
+    ],
+    B: [
+      { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
+      { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
+    ],
+    C: [
+      { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
+      { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
+    ],
+  };
+
+  // Build a grid for a section from its routine array.
+  // For each day, create an array (length = allTimeSlots.length)
+  // and assign the course code at the proper index.
+  const buildGridFromRoutine = (sectionRoutine) => {
+    const grid = {};
+    days.forEach((day) => {
+      grid[day] = Array(allTimeSlots.length).fill("");
+    });
+    sectionRoutine.forEach((entry) => {
+      const { course, day, time } = entry;
+      const idx = allTimeSlots.indexOf(time);
+      if (idx !== -1) {
+        grid[day][idx] = course;
+      }
+    });
+    return grid;
+  };
+
+  // Render a single row based on displayColumns.
+  // Gap columns are rendered only once (on the first row) using rowSpan.
+  const renderRow = (day, dayIdx, grid) => {
+    return (
+      <tr key={day} className="bg-white">
+        <td className="border p-2 font-semibold text-sm bg-gray-50">{day}</td>
+        {displayColumns.map((col, idx) => {
+          if (col.type === "time") {
+            return (
+              <td key={idx} className="border p-2 text-center text-sm">
+                {grid[day][col.gridIndex]}
+              </td>
+            );
+          } else if (col.type === "gap") {
+            // Render gap cell only for the first row.
+            if (dayIdx === 0) {
+              return (
+                <td
+                  key={idx}
+                  rowSpan={days.length}
+                  className="border p-2 text-center bg-gray-100 text-lg font-semibold"
+                >
+                  {col.label}
+                </td>
+              );
+            } else {
+              return null;
+            }
+          }
+          return null;
+        })}
+      </tr>
+    );
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">View Routine</h1>
-      
-      <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
-        <QueryForm query={query} onChange={setQuery} />
-      </div>
-
-      {query.department && query.level && query.term && (
-        <>
-          <div className="mb-8 bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
+    <div className="p-6 space-y-10 bg-gray-100 min-h-screen">
+      {Object.keys(routine).map((section) => {
+        const grid = buildGridFromRoutine(routine[section]);
+        return (
+          <div key={section} className="shadow-lg rounded-lg overflow-hidden bg-white">
+            <h2 className="text-2xl font-bold bg-blue-500 text-white p-4">
+              Routine for {section}
+            </h2>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Day
+                  <th className="px-4 py-2 text-left text-sm font-bold text-gray-700">
+                    Day / Time
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Course
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Teacher
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Room
-                  </th>
+                  {displayColumns.map((col, idx) => {
+                    if (col.type === "time") {
+                      return (
+                        <th
+                          key={idx}
+                          className="px-4 py-2 text-center text-sm font-bold text-gray-700"
+                        >
+                          {col.label}
+                        </th>
+                      );
+                    } else if (col.type === "gap") {
+                      return (
+                        <th
+                          key={idx}
+                          className="px-4 py-2 text-center text-lg font-bold text-gray-700 bg-gray-300"
+                        >
+                          {col.label}
+                        </th>
+                      );
+                    }
+                    return null;
+                  })}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {mockRoutine.map((cell, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap">{cell.day}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{cell.time}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{cell.courseId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{cell.teacherId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{cell.room}</td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-gray-100">
+                {days.map((day, idx) => renderRow(day, idx, grid))}
               </tbody>
             </table>
           </div>
-
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            <Download className="h-5 w-5" />
-            Download PDF
-          </button>
-        </>
-      )}
+        );
+      })}
     </div>
   );
-}
+};
+
+export default ViewRoutine;
