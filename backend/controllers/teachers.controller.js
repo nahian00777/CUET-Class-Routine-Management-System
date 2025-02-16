@@ -28,7 +28,7 @@ const addTeacher = asyncHandler(async (req, res) => {
   // 1st step :
   const { teacherID, teacherName, department } = req.body;
   const email = teacherID + "@teacher.com";
-  const password = teacherID + "123";
+  const password = teacherID;
   // 2nd step :
   if (
     [teacherName, teacherID, password].some((field) => !field.trim() === "")

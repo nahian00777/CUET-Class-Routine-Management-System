@@ -28,7 +28,7 @@ const addCoordinator = asyncHandler(async (req, res) => {
   const { coordinatorID, coordinatorName, department, assignedBatch } =
     req.body;
   const email = coordinatorID + "@coordinator.com";
-  const password = coordinatorID + "123";
+  const password = coordinatorID;
   // 2nd step :
   if (
     [coordinatorName, coordinatorID, password].some(
