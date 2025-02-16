@@ -13,6 +13,7 @@ export default function CoordinatorManagement() {
     department: "",
     assignedBatch: "",
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchCoordinators = async () => {
@@ -110,6 +111,20 @@ export default function CoordinatorManagement() {
     }
   };
 
+  // Filter coordinators based on the search query
+  const filteredCoordinators = coordinators.filter(
+    (coordinator) =>
+      coordinator.coordinatorName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      coordinator.coordinatorID
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      coordinator.assignedBatch
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Coordinators</h1>
@@ -148,7 +163,7 @@ export default function CoordinatorManagement() {
             />
           </div>
           <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Department
             </label>
             <select
@@ -194,6 +209,16 @@ export default function CoordinatorManagement() {
         </button>
       </form>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by Coordinator Name, ID, or Batch"
+          className="w-full p-2 border rounded"
+        />
+      </div>
+
       <div className="bg-white rounded-lg shadow-md overflow-auto">
         <table className="min-w-full">
           <thead className="bg-gray-50">
@@ -216,7 +241,7 @@ export default function CoordinatorManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {coordinators.map((coordinator) => (
+            {filteredCoordinators.map((coordinator) => (
               <tr key={coordinator.coordinatorID}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {coordinator.coordinatorID}
@@ -246,10 +271,10 @@ export default function CoordinatorManagement() {
                 </td>
               </tr>
             ))}
-            {coordinators.length === 0 && (
+            {filteredCoordinators.length === 0 && (
               <tr>
                 <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                  No coordinators assigned yet.
+                  No coordinators found.
                 </td>
               </tr>
             )}

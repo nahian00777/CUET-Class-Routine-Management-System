@@ -11,7 +11,9 @@ export default function CourseManagement() {
     courseID: "",
     courseName: "",
     creditHours: 3,
+    courseType: "Theory", // Default value
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -37,12 +39,18 @@ export default function CourseManagement() {
           courseID: formData.courseID,
           courseName: formData.courseName,
           creditHours: formData.creditHours,
+          courseType: formData.courseType,
         });
         setCourses(
           courses.map((c) => (c.courseID === editingId ? formData : c))
         );
         setEditingId(null);
-        setFormData({ courseID: "", courseName: "", creditHours: 3 });
+        setFormData({
+          courseID: "",
+          courseName: "",
+          creditHours: 3,
+          courseType: "Theory",
+        });
         toast.success("Course updated successfully.");
       } catch (error) {
         console.error("Error updating course:", error);
@@ -56,10 +64,16 @@ export default function CourseManagement() {
             courseID: formData.courseID,
             courseName: formData.courseName,
             creditHours: formData.creditHours,
+            courseType: formData.courseType,
           }
         );
         setCourses([...courses, response.data.data]);
-        setFormData({ courseID: "", courseName: "", creditHours: 3 });
+        setFormData({
+          courseID: "",
+          courseName: "",
+          creditHours: 3,
+          courseType: "Theory",
+        });
         toast.success("Course added successfully.");
       } catch (error) {
         console.error("Error adding course:", error);
@@ -74,6 +88,7 @@ export default function CourseManagement() {
       courseID: course.courseID,
       courseName: course.courseName,
       creditHours: course.creditHours,
+      courseType: course.courseType,
     });
   };
 
@@ -90,6 +105,13 @@ export default function CourseManagement() {
     }
   };
 
+  // Filter courses based on the search query
+  const filteredCourses = courses.filter(
+    (course) =>
+      course.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.courseID.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Courses</h1>
@@ -98,7 +120,7 @@ export default function CourseManagement() {
         onSubmit={handleSubmit}
         className="mb-8 bg-white p-6 rounded-lg shadow-md"
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Course Name
@@ -144,10 +166,29 @@ export default function CourseManagement() {
               className="w-full p-2 border rounded"
               required
             >
-              <option value={0.75}>0.75</option>
-              <option value={1.5}>1.5</option>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
               <option value={3}>3.0</option>
               <option value={4}>4.0</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Course Type
+            </label>
+            <select
+              value={formData.courseType}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  courseType: e.target.value,
+                })
+              }
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="Theory">Theory</option>
+              <option value="Sessional">Sessional</option>
             </select>
           </div>
         </div>
@@ -164,6 +205,16 @@ export default function CourseManagement() {
         </button>
       </form>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by Course Name or ID"
+          className="w-full p-2 border rounded"
+        />
+      </div>
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50">
@@ -178,12 +229,15 @@ export default function CourseManagement() {
                 Credit Hours
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Course Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {courses.map((course) => (
+            {filteredCourses.map((course) => (
               <tr key={course.courseID}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {course.courseID}
@@ -193,6 +247,9 @@ export default function CourseManagement() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {course.creditHours}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {course.courseType}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap flex gap-2">
                   <button

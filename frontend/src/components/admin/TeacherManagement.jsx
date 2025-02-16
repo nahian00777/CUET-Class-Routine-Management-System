@@ -12,6 +12,7 @@ export default function TeacherManagement() {
     teacherName: "",
     department: "",
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -97,6 +98,13 @@ export default function TeacherManagement() {
     }
   };
 
+  // Filter teachers based on the search query
+  const filteredTeachers = teachers.filter(
+    (teacher) =>
+      teacher.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      teacher.teacherID.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Teachers</h1>
@@ -153,10 +161,6 @@ export default function TeacherManagement() {
               <option value="EEE">EEE</option>
               <option value="ME">ME</option>
               <option value="CE">CE</option>
-              <option value="CSE">CSE</option>
-              <option value="EEE">EEE</option>
-              <option value="ME">ME</option>
-              <option value="CE">CE</option>
             </select>
           </div>
         </div>
@@ -172,6 +176,16 @@ export default function TeacherManagement() {
           {editingId ? "Update Teacher" : "Add Teacher"}
         </button>
       </form>
+
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by Teacher Name or ID"
+          className="w-full p-2 border rounded"
+        />
+      </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full">
@@ -192,7 +206,7 @@ export default function TeacherManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {teachers.map((teacher) => (
+            {filteredTeachers.map((teacher) => (
               <tr key={teacher.teacherID}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {teacher.teacherID}

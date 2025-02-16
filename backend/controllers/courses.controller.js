@@ -30,12 +30,13 @@ export const getCourseByID = asyncHandler(async (req, res) => {
 });
 
 const addCourse = asyncHandler(async (req, res) => {
-  const { courseID, courseName, creditHours } = req.body;
+  const { courseID, courseName, creditHours, courseType } = req.body;
 
   const course = new Course({
     courseID,
     courseName,
     creditHours,
+    courseType,
   });
 
   await course.save();
