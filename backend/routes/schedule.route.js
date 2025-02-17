@@ -5,7 +5,7 @@ import { findSchedule, getSchedules, setSchedules, updateTimeSlot } from "../con
 const scheduleRouter = Router();
 
 scheduleRouter.route("/setSchedule").post(setSchedules);
-scheduleRouter.route("/getSchedule").get(getSchedules);
+scheduleRouter.route("/getSchedule").post(getSchedules);
 scheduleRouter.route("/findSchedule").post(findSchedule);
 scheduleRouter.route("/updateTimeSlot").patch(updateTimeSlot);
 

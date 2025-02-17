@@ -8,12 +8,19 @@ import mongoose from "mongoose";
 export const getSchedules = asyncHandler(async (req, res) => {
   // 1. Fetch specific schedule
   const { section, term, level, department } = req.body;
+  // console.log(section);
+  // console.log(term);
+  // console.log(level);
+  // console.log(department);
   const schedule = await Schedule.find({
-    section,
-    term,
-    level,
-    department,
+    section: section,
+    term: term,
+    level: level,
+    department: department,
   }).populate("course");
+  if (schedule.length === 0 || !schedule) {
+    throw new ApiError(404, "Schedule not found");
+  }
   // 2. Return success response with the schedule
   return res
     .status(200)
