@@ -18,30 +18,30 @@ const registerUser = asyncHandler(async (req, res) => {
   // 9. return success response
 
   // 1st step :
-  const { username, password } = req.body;
+  const { email, username, password } = req.body;
   // 2nd step :
   if ([username, password].some((field) => !field.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
+  // console.log(username);
   // 3rd step :
-  const existedUser = await User.findOne({
-    $or: [{ username }],
-  });
+  const existedUser = await User.findOne({ username: username });
   if (existedUser) {
     throw new ApiError(405, "User already exists");
   }
-  // 7th step :
   const user = await User.create({
-    username: username.toLowerCase(),
+    email: email,
+    username: username,
     password: password,
-    // coverImage: coverImage?.url || "",
   });
+  // console.log(user);
 
   // 8th step :
   const createdUser = await User.findById(user._id).select("-password");
   if (!createdUser) {
     throw new ApiError(500, "User creation failed");
   }
+  console.log(createdUser);
   // 9th step :
   return res
     .status(201)
@@ -81,7 +81,7 @@ const loginUser = asyncHandler(async (req, res) => {
       $or: [{ username }],
     });
   }
-  
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }
