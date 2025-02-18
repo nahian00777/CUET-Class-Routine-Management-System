@@ -85,7 +85,8 @@ const loginTeacher = asyncHandler(async (req, res) => {
 
   // 3rd step :
   const teacher = await Teacher.findOne({
-    $or: [{ teacherID }, { teacherName }],
+    email: email,
+    password: password,
   });
 
   if (!teacher) {
@@ -93,11 +94,11 @@ const loginTeacher = asyncHandler(async (req, res) => {
   }
 
   // 4th step :
-  const isPasswordValid = await teacher.isPasswordCorrect(password);
+  // const isPasswordValid = await teacher.isPasswordCorrect(password);
 
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid password");
-  }
+  // if (!isPasswordValid) {
+  //   throw new ApiError(401, "Invalid password");
+  // }
 
   // 5th step :
   const accessToken = await teacher.generateAccessToken();
@@ -313,4 +314,11 @@ const deleteTeacher = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User deleted successfully"));
 });
 
-export { addTeacher, loginTeacher, logoutTeacher, getTeacher, updateTeacher , deleteTeacher};
+export {
+  addTeacher,
+  loginTeacher,
+  logoutTeacher,
+  getTeacher,
+  updateTeacher,
+  deleteTeacher,
+};
