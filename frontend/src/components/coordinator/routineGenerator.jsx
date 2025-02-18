@@ -30,14 +30,7 @@ const findCourse = async (courseId) => {
   }
 };
 
-const storeScheduleData = async (
-  course,
-  timeSlots,
-  department,
-  section,
-  level,
-  term
-) => {
+const storeScheduleData = async (routine, department, section, level, term) => {
   try {
     const response = await fetch(
       "http://localhost:3000/api/v1/schedules/setSchedule",
@@ -47,12 +40,11 @@ const storeScheduleData = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          course,
-          timeSlots,
+          routine,
           department,
           section,
           level,
-          term,
+          term
         }),
       }
     );
@@ -181,7 +173,7 @@ export const generateRoutine = (courses, labCourses, numSections) => {
           !usedSlots[section][day].has(timeSlot) &&
           !globalUsedSlots[day].has(timeSlot)
         ) {
-          routine[section].push([course_code, day, timeSlot]);
+          routine[section].push([course_code, day, timeSlot, 0]);
           usedSlots[section][day].add(timeSlot);
           globalUsedSlots[day].add(timeSlot); // Mark the slot as used globally
           slotsAssigned++;
@@ -248,7 +240,7 @@ export const generateRoutine = (courses, labCourses, numSections) => {
           if (!conflict) {
             // Assign all three slots of the valid combination to the lab course
             for (const timeSlot of validCombination) {
-              routine[section].push([course_code, day, timeSlot]);
+              routine[section].push([course_code, day, timeSlot, 1]);
               usedSlots[section][day].add(timeSlot);
               globalUsedSlots[day].add(timeSlot); // Mark the slot as used globally
             }
@@ -289,7 +281,6 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
   for (const section in routine) {
     console.log(`Processing section: ${section}`); // Debugging log
     const sec = section;
-    console.log("Section ID", routine[section]);
     const courseId = routine[section][0][0];
     const day = routine[section][0][1];
     const time = routine[section][0][2];
@@ -297,6 +288,15 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
     const term = "Term 1";
     const department = "CSE";
     const [startTime, endTime] = time.split("-");
+
+    console.log(routine[section]);
+    await storeScheduleData(
+      routine[section],
+      department,
+      section,
+      level,
+      term,
+    );
 
     // Create a time slot object
     const timeSlots = {
@@ -319,14 +319,7 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
     //   room: "3204", // Replace with actual data
     // });
     // console.log(routine[section][0][0]);
-    await storeScheduleData(
-      courseData,
-      timeSlots,
-      department,
-      section,
-      level,
-      term
-    );
+
     // console.log(routine[section][0][0]);
 
     // Create a new page for the current section

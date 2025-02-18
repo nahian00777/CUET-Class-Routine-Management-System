@@ -1,41 +1,8 @@
 import mongoose from "mongoose";
 
 const scheduleSchema = new mongoose.Schema({
-  course: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Course",
-    required: true,
-  },
-  timeSlots: [
-    {
-      day: {
-        type: String,
-        required: true,
-        enum: [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ],
-      },
-      startTime: {
-        type: "String",
-        require: true,
-      },
-      endTime: {
-        type: "String",
-        required: true,
-      },
-    },
-  ],
-  instructor: {
-    type: String,
-  },
-  department: {
-    type: String,
+  routine: {
+    type: [[String]],
     required: true,
   },
   level: {
@@ -46,12 +13,21 @@ const scheduleSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  department: {
+    type: String,
+    required: true,
+  },
   section: {
     type: String,
     required: true,
   },
-  room: {
+  instructor: {
     type: String,
+  },
+  isLab: {
+    type: Boolean,
+    required: true,
+    default: 1,
   },
 });
 

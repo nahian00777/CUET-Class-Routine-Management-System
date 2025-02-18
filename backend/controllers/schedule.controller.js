@@ -6,46 +6,57 @@ import { Schedule } from "../models/schedule.model.js";
 import mongoose from "mongoose";
 
 export const getSchedules = asyncHandler(async (req, res) => {
-  // 1. Fetch specific schedule
-  const { section, term, level, department } = req.body;
-  // console.log(section);
-  // console.log(term);
-  // console.log(level);
-  // console.log(department);
-  const schedule = await Schedule.find({
-    section: section,
+  const { term, level, department } = req.body; // Expect these in the request body
+
+  const schedules = await Schedule.find({
     term: term,
     level: level,
     department: department,
-  }).populate("course");
-  if (schedule.length === 0 || !schedule) {
-    throw new ApiError(404, "Schedule not found");
+  });
+
+  if (!schedules || schedules.length === 0) {
+    throw new ApiError(404, "Schedules not found");
   }
-  // 2. Return success response with the schedule
+
+  // Group routines by section
+  const routinesBySection = schedules.reduce((acc, schedule) => {
+    if (!acc[schedule.section]) {
+      acc[schedule.section] = [];
+    }
+    schedule.routine.forEach(([course, day, time, isLab]) => {
+      acc[schedule.section].push({
+        course,
+        day,
+        time,
+        type : isLab == '1' ? "Lab": "Theory",
+        span: isLab == '1' ? 3 : 1,
+      });
+    });
+    return acc;
+  }, {});
+
+  // Return success response with the grouped routines
   return res
     .status(200)
-    .json(new ApiResponse(200, schedule, "Schedule fetched successfully"));
+    .json(new ApiResponse(200, routinesBySection, "Schedules fetched successfully"));
 });
 
-export const setSchedules = asyncHandler(async (req, res) => {
-  const { course, timeSlots, department, level, term, section } = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(course)) {
-    return res.status(400).json({ message: "Invalid course ID" });
-  }
+export const setSchedules = asyncHandler(async (req, res) => {
+  const { routine, department, level, term, section } = req.body;
 
   // Validate required fields
-  if (!course || !timeSlots || !department || !level || !term || !section) {
+  if (!routine || !department || !level || !term || !section) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
     // Define the query to find an existing schedule
-    const query = { course, department, section, term, level };
+    const query = { department, level, term, section };
 
     // Define the update operation
     const update = {
-      timeSlots,
+      routine,
       department,
       level,
       term,
@@ -54,29 +65,25 @@ export const setSchedules = asyncHandler(async (req, res) => {
 
     // Options for findOneAndUpdate
     const options = {
-      new: true, // Return the updated document
-      upsert: true, // Create a new document if no match is found
+      new: true,             // Return the updated document
+      upsert: true,          // Create a new document if no match is found
       setDefaultsOnInsert: true, // Apply default values if a new document is created
     };
 
     // Find and update the schedule, or create a new one if it doesn't exist
-    const savedSchedule = await Schedule.findOneAndUpdate(
-      query,
-      update,
-      options
-    );
+    const savedSchedule = await Schedule.findOneAndUpdate(query, update, options);
 
     // Send a success response with the saved schedule
     res.status(200).json(savedSchedule);
   } catch (error) {
-    console.log(error);
-    // Handle any errors that occur during save
+    console.error("Error creating/updating schedule:", error);
     res.status(500).json({
       message: "Failed to create or update schedule",
       error: error.message,
     });
   }
 });
+
 
 export const findSchedule = asyncHandler(async (req, res) => {
   const { instructor } = req.body;

@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect } from "react";
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const allTimeSlots = [
@@ -27,27 +28,48 @@ const displayColumns = [
   { type: "time", label: "4:10-5:00", gridIndex: 8 },
 ];
 
-const ViewRoutine = () => {
-  // Sample routine object with two sections.
-  const routine = {
-    A: [
-      { course: "111", day: "Sunday", time: "11:00-11:50", type: "theory", span: 1 },
-      { course: "222", day: "Monday", time: "9:50-10:40", type: "theory", span: 1 },
-      { course: "44", day: "Sunday", time: "2:30-3:20", type: "lab", span: 3 },
-    ],
-    B: [
-      { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
-      { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
-    ],
-    C: [
-      { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
-      { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
-    ],
-  };
+const ViewRoutine = ()=> {
 
-  // Build a grid for a section from its routine array.
-  // For each day, create an array (length = allTimeSlots.length)
-  // and assign the course code at the proper index.
+const [routine, setRoutine] = useState({});
+
+  useEffect(() => {
+    const fetchRoutineData = async () => {
+      try {
+        const term = 'Term 1';    // Example value
+        const level = 'Level 1';   // Example value
+        const department = 'CSE'; // Example value
+
+        const response = await fetch('http://localhost:3000/api/v1/schedules/getSchedule', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            term,
+            level,
+            department,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch routine data');
+        }
+
+        const data = await response.json();
+
+        setRoutine(data.data); // Assuming the data is in the `data` field of the response
+        // setRoutine(demo_routine); 
+      } catch (error) {
+        console.error('Error fetching routine data:', error);
+      }
+    };
+
+    fetchRoutineData();
+  }, []);
+
+  
+
+
   const buildGridFromRoutine = (sectionRoutine) => {
     const grid = {};
     days.forEach((day) => {

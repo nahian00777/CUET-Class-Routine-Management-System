@@ -54,7 +54,6 @@ const RoutineGeneratorr = (props) => {
     }
   ];
     labCourses=props.labCourses;
-    console.log(courses);
   const handleGenerateRoutine = () => {
     //const numSections = 3; // You can make this dynamic
     const routine = generateRoutine(courses, labCourses, numSections);
