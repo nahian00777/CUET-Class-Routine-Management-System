@@ -89,8 +89,9 @@ const loginCoordinator = asyncHandler(async (req, res) => {
 
   // 3rd step :
   const coordinator = await Coordinator.findOne({
-    $or: [{ coordinatorID }, { coordinatorName }],
+    email : email,
   });
+  // console.log("coordinator:", coordinator);
 
   if (!coordinator) {
     throw new ApiError(404, "User not found");
@@ -155,8 +156,9 @@ const logoutCoordinator = async (req, res) => {
   */
 
   // 1st step & 2nd step :
+  // console.log("req.coordinator:", req.coordinator);
   const coordinator = await Coordinator.findByIdAndUpdate(
-    req.coordinator._id,
+    req.coordinator,
     {
       $unset: {
         refreshToken: 1,
