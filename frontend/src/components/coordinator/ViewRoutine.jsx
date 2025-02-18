@@ -35,9 +35,9 @@ const [routine, setRoutine] = useState({});
   useEffect(() => {
     const fetchRoutineData = async () => {
       try {
-        const term = 'Term 1';    // Example value
-        const level = 'Level 1';   // Example value
-        const department = 'CSE'; // Example value
+        const term = 'Term 1';
+        const level = 'Level 1';
+        const department = 'CSE';
 
         const response = await fetch('http://localhost:3000/api/v1/schedules/getSchedule', {
           method: 'POST',
