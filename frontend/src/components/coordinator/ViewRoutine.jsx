@@ -1,6 +1,4 @@
-import React from "react";
 import { useState, useEffect } from "react";
-
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const allTimeSlots = [
   "8:10-9:00",
@@ -28,16 +26,27 @@ const displayColumns = [
   { type: "time", label: "4:10-5:00", gridIndex: 8 },
 ];
 
-const ViewRoutine = ()=> {
+const initialRoutine = {
+  A: [
+    { course: "111", day: "Sunday", time: "11:00-11:50", type: "theory", span: 1 },
+    { course: "222", day: "Monday", time: "9:50-10:40", type: "theory", span: 1 },
+    { course: "44", day: "Sunday", time: "2:30-3:20", type: "lab", span: 3 },
+  ],
+  B: [
+    { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
+    { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
+  ],
+};
 
-const [routine, setRoutine] = useState({});
+const ViewRoutine = () => {
+  const [routine, setRoutine] = useState({});
 
   useEffect(() => {
     const fetchRoutineData = async () => {
       try {
-        const term = 'Term 1';    // Example value
-        const level = 'Level 1';   // Example value
-        const department = 'CSE'; // Example value
+        const term = 'Term 1';
+        const level = 'Level 1';
+        const department = 'CSE';
 
         const response = await fetch('http://localhost:3000/api/v1/schedules/getSchedule', {
           method: 'POST',
@@ -56,66 +65,89 @@ const [routine, setRoutine] = useState({});
         }
 
         const data = await response.json();
-
-        setRoutine(data.data); // Assuming the data is in the `data` field of the response
-        // setRoutine(demo_routine); 
+        setRoutine(data.data || initialRoutine);
       } catch (error) {
         console.error('Error fetching routine data:', error);
+        setRoutine(initialRoutine);
       }
     };
 
     fetchRoutineData();
   }, []);
-
   
-
 
   const buildGridFromRoutine = (sectionRoutine) => {
     const grid = {};
     days.forEach((day) => {
-      grid[day] = Array(allTimeSlots.length).fill("");
+      grid[day] = Array(allTimeSlots.length).fill(null);
     });
     sectionRoutine.forEach((entry) => {
-      const { course, day, time } = entry;
+      const { course, day, time, span = 1 } = entry;
       const idx = allTimeSlots.indexOf(time);
       if (idx !== -1) {
-        grid[day][idx] = course;
+        for (let i = 0; i < span; i++) {
+          const currentIdx = idx + i;
+          if (currentIdx < allTimeSlots.length) {
+            grid[day][currentIdx] = {
+              course,
+              span,
+              isStart: i === 0,
+            };
+          }
+        }
       }
     });
     return grid;
   };
 
-  // Render a single row based on displayColumns.
-  // Gap columns are rendered only once (on the first row) using rowSpan.
   const renderRow = (day, dayIdx, grid) => {
+    const cells = [];
+    let colIdx = 0;
+    while (colIdx < displayColumns.length) {
+      const col = displayColumns[colIdx];
+      if (col.type === "time") {
+        const cellData = grid[day][col.gridIndex];
+        if (cellData && cellData.isStart) {
+          cells.push(
+            <td
+              key={colIdx}
+              colSpan={cellData.span}
+              className="border p-2 text-center text-sm"
+            >
+              {cellData.course}
+            </td>
+          );
+          colIdx += cellData.span;
+        } else {
+          cells.push(
+            <td key={colIdx} className="border p-2 text-center text-sm">
+              {cellData?.course}
+            </td>
+          );
+          colIdx++;
+        }
+      } else if (col.type === "gap") {
+        if (dayIdx === 0) {
+          cells.push(
+            <td
+              key={colIdx}
+              rowSpan={days.length}
+              className="border p-2 text-center bg-gray-100 text-lg font-semibold"
+            >
+              {col.label}
+            </td>
+          );
+        }
+        colIdx++;
+      } else {
+        colIdx++;
+      }
+    }
+
     return (
       <tr key={day} className="bg-white">
         <td className="border p-2 font-semibold text-sm bg-gray-50">{day}</td>
-        {displayColumns.map((col, idx) => {
-          if (col.type === "time") {
-            return (
-              <td key={idx} className="border p-2 text-center text-sm">
-                {grid[day][col.gridIndex]}
-              </td>
-            );
-          } else if (col.type === "gap") {
-            // Render gap cell only for the first row.
-            if (dayIdx === 0) {
-              return (
-                <td
-                  key={idx}
-                  rowSpan={days.length}
-                  className="border p-2 text-center bg-gray-100 text-lg font-semibold"
-                >
-                  {col.label}
-                </td>
-              );
-            } else {
-              return null;
-            }
-          }
-          return null;
-        })}
+        {cells}
       </tr>
     );
   };
