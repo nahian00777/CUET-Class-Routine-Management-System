@@ -28,8 +28,8 @@ export const getSchedules = asyncHandler(async (req, res) => {
         course,
         day,
         time,
-        type : isLab == '1' ? "Lab": "Theory",
-        span: isLab == '1' ? 3 : 1,
+        type: isLab == "1" ? "Lab" : "Theory",
+        span: isLab == "1" ? 3 : 1,
       });
     });
     return acc;
@@ -38,9 +38,10 @@ export const getSchedules = asyncHandler(async (req, res) => {
   // Return success response with the grouped routines
   return res
     .status(200)
-    .json(new ApiResponse(200, routinesBySection, "Schedules fetched successfully"));
+    .json(
+      new ApiResponse(200, routinesBySection, "Schedules fetched successfully")
+    );
 });
-
 
 export const setSchedules = asyncHandler(async (req, res) => {
   const { routine, department, level, term, section } = req.body;
@@ -65,13 +66,17 @@ export const setSchedules = asyncHandler(async (req, res) => {
 
     // Options for findOneAndUpdate
     const options = {
-      new: true,             // Return the updated document
-      upsert: true,          // Create a new document if no match is found
+      new: true, // Return the updated document
+      upsert: true, // Create a new document if no match is found
       setDefaultsOnInsert: true, // Apply default values if a new document is created
     };
 
     // Find and update the schedule, or create a new one if it doesn't exist
-    const savedSchedule = await Schedule.findOneAndUpdate(query, update, options);
+    const savedSchedule = await Schedule.findOneAndUpdate(
+      query,
+      update,
+      options
+    );
 
     // Send a success response with the saved schedule
     res.status(200).json(savedSchedule);
@@ -84,12 +89,9 @@ export const setSchedules = asyncHandler(async (req, res) => {
   }
 });
 
-
 export const findSchedule = asyncHandler(async (req, res) => {
   const { instructor } = req.body;
-  const schedule = await Schedule.find({ instructor: instructor }).populate(
-    "course"
-  );
+  const schedule = await Schedule.find({ instructor: instructor });
   if (!schedule) {
     throw new ApiError(404, "Schedule not found");
   }
