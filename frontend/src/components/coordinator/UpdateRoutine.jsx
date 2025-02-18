@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-// Make sure to import your PDF generator function from its module
-import { generatePdfLabFirst } from "./routineGeneratorLabFirst";
+import { useState, useEffect } from "react";
+import { generatePdf } from "./routineGenerator";
 
-// Demo arrays
+// Days and time slots arrays
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 const allTimeSlots = [
   "8:10-9:00",
@@ -16,10 +15,7 @@ const allTimeSlots = [
   "4:10-5:00",
 ];
 
-// Define the display columns for the table header.
-// We insert two gap columns:
-// - A Break Time column inserted after the "9:50-10:40" slot (i.e. after grid index 2)
-// - A Lunch Time column inserted after the "12:40-1:30" slot (i.e. after grid index 5)
+// Display columns for the table header, with two gap columns for break/lunch.
 const displayColumns = [
   { type: "time", label: "8:10-9:00", gridIndex: 0 },
   { type: "time", label: "9:00-9:50", gridIndex: 1 },
@@ -34,37 +30,27 @@ const displayColumns = [
   { type: "time", label: "4:10-5:00", gridIndex: 8 },
 ];
 
-// A sample routine for multiple sections.
-// For lab courses, we mark type as "lab" and span as 3.
-// Only the starting cell (isStart) is draggable.
-const initialRoutine = {
-  A: [
-    { course: "111", day: "Sunday", time: "11:00-11:50", type: "theory", span: 1 },
-    { course: "222", day: "Monday", time: "9:50-10:40", type: "theory", span: 1 },
-    { course: "44", day: "Sunday", time: "2:30-3:20", type: "lab", span: 3 },
-  ],
-  B: [
-    { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
-    { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
-  ],
-};
-
-// Build a grid object for a given section routine.
-// Each day maps to an array (length = allTimeSlots.length).
-// For lab courses, the first cell is flagged (isStart) and following cells are marked as merged.
-function generateInitialGrid(routineSection) {
+/**
+ * Generates the initial grid for a section.
+ * For lab courses, the default span is 3 (if not provided) and they are merged.
+ */
+const generateInitialGrid = (routineSection) => {
   const grid = {};
   days.forEach((day) => {
     grid[day] = Array(allTimeSlots.length).fill(null);
   });
+
   routineSection.forEach((entry) => {
-    const { course, day, time, type, span } = entry;
+    // For lab courses, default span is 3; theory courses always span 1.
+    const { course, day, time, type, span = type === "lab" ? 3 : 1 } = entry;
     const index = allTimeSlots.indexOf(time);
     if (index !== -1) {
       if (type === "lab") {
-        grid[day][index] = { course, type, span, isStart: true };
-        for (let i = 1; i < span; i++) {
-          grid[day][index + i] = { course, type, span, isMerged: true };
+        if (canPlaceLabAt(day, index, grid[day], span)) {
+          grid[day][index] = { course, type, span, isStart: true };
+          for (let i = 1; i < span; i++) {
+            grid[day][index + i] = { course, type, span, isMerged: true };
+          }
         }
       } else {
         grid[day][index] = { course, type, span: 1 };
@@ -72,9 +58,11 @@ function generateInitialGrid(routineSection) {
     }
   });
   return grid;
-}
+};
 
-// Helper: Check if a lab course can be placed at a given index on a given day.
+/**
+ * Checks if a lab course can be placed at the given index on the specified day.
+ */
 const canPlaceLabAt = (day, index, gridRow, span = 3) => {
   if (index + span > gridRow.length) return false;
   for (let i = 0; i < span; i++) {
@@ -83,42 +71,70 @@ const canPlaceLabAt = (day, index, gridRow, span = 3) => {
   return true;
 };
 
-const EditableRoutine = () => {
-  // Manage the selected section.
-  const sectionKeys = Object.keys(initialRoutine);
-  const [selectedSection, setSelectedSection] = useState(sectionKeys[0]);
-
-  // Build a grids object for each section.
-  const [sectionGrids, setSectionGrids] = useState(() => {
-    const initialGrids = {};
-    sectionKeys.forEach((section) => {
-      initialGrids[section] = generateInitialGrid(initialRoutine[section]);
-    });
-    return initialGrids;
+const UpdateRoutine = () => {
+  // State to hold the routine data (sections A and B, for example)
+  const [routineData, setRoutineData] = useState({
+    A: [],
+    B: [],
   });
-
-  // Build temporary slots for each section.
-  const [sectionTempSlots, setSectionTempSlots] = useState(() => {
-    const temp = {};
-    sectionKeys.forEach((section) => {
-      temp[section] = { tempLab: null, tempTheory: null };
-    });
-    return temp;
-  });
-
-  // dragData holds info about the dragged course.
-  // It will include:
-  // - origin: "grid" or "temp"
-  // - If from grid: sourceDay and sourceIndex.
-  // - course, type, span.
+  // Selected section identifier.
+  const [selectedSection, setSelectedSection] = useState("A");
+  // The grid for each section.
+  const [sectionGrids, setSectionGrids] = useState({});
+  // Temporary slots for each section (for lab and theory courses).
+  const [sectionTempSlots, setSectionTempSlots] = useState({});
+  // Holds the current drag data.
   const [dragData, setDragData] = useState(null);
 
-  // Get the grid and temp slots for the currently selected section.
-  const grid = sectionGrids[selectedSection];
-  const { tempLab, tempTheory } = sectionTempSlots[selectedSection];
+  // Fetch routine data on component mount.
+  useEffect(() => {
+    const fetchRoutineData = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/v1/schedules/getSchedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            term: "Term 1",
+            level: "Level 1",
+            department: "CSE",
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setRoutineData(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching routine data:", error);
+      }
+    };
+
+    fetchRoutineData();
+  }, []);
+
+  // Update grids and temporary slots whenever routineData changes.
+  useEffect(() => {
+    const sectionKeys = Object.keys(routineData);
+    const newGrids = {};
+    const newTempSlots = {};
+
+    sectionKeys.forEach((section) => {
+      newGrids[section] = generateInitialGrid(routineData[section]);
+      newTempSlots[section] = { tempLab: null, tempTheory: null };
+    });
+
+    setSectionGrids(newGrids);
+    setSectionTempSlots(newTempSlots);
+    if (sectionKeys.length > 0) setSelectedSection(sectionKeys[0]);
+  }, [routineData]);
+
+  // Get the grid and temporary slots for the currently selected section.
+  const grid = sectionGrids[selectedSection] || {};
+  const { tempLab, tempTheory } = sectionTempSlots[selectedSection] || {};
 
   // ---------- Handlers for Grid Cells ----------
   const handleGridDragStart = (e, day, index, cell) => {
+    // Prevent dragging if the cell is empty or a merged part of a lab.
     if (!cell || (cell.type === "lab" && !cell.isStart)) {
       e.preventDefault();
       return;
@@ -134,33 +150,34 @@ const EditableRoutine = () => {
 
   const handleGridDrop = (e, targetDay, targetIndex) => {
     e.preventDefault();
-    if (!dragData) return;
+    if (!dragData || !grid[targetDay]) return;
 
     const { origin, sourceDay, sourceIndex, course, type, span } = dragData;
     const targetRow = grid[targetDay];
 
+    // For theory courses, ensure the target cell is empty.
     if (type === "theory") {
       if (targetRow[targetIndex] !== null) return;
     } else if (type === "lab") {
+      // For lab courses, ensure there is room for the entire span.
       if (!canPlaceLabAt(targetDay, targetIndex, targetRow, span)) return;
     }
 
     const newGrid = { ...grid };
-    newGrid[targetDay] = [...newGrid[targetDay]];
+    newGrid[targetDay] = [...targetRow];
 
-    // Remove course from its origin.
+    // Remove the course from its origin.
     if (origin === "grid") {
       newGrid[sourceDay] = [...newGrid[sourceDay]];
       if (type === "lab") {
-        newGrid[sourceDay][sourceIndex] = null;
-        for (let i = 1; i < span; i++) {
+        for (let i = 0; i < span; i++) {
           newGrid[sourceDay][sourceIndex + i] = null;
         }
       } else {
         newGrid[sourceDay][sourceIndex] = null;
       }
     } else if (origin === "temp") {
-      // Update temporary slots for the section.
+      // If the course was in a temporary slot, clear that slot.
       setSectionTempSlots((prev) => ({
         ...prev,
         [selectedSection]: {
@@ -170,11 +187,13 @@ const EditableRoutine = () => {
       }));
     }
 
-    // Place the course at the target.
+    // Place the course at the target location.
     if (type === "lab") {
-      newGrid[targetDay][targetIndex] = { course, type, span, isStart: true };
-      for (let i = 1; i < span; i++) {
-        newGrid[targetDay][targetIndex + i] = { course, type, span, isMerged: true };
+      for (let i = 0; i < span; i++) {
+        newGrid[targetDay][targetIndex + i] =
+          i === 0
+            ? { course, type, span, isStart: true }
+            : { course, type, span, isMerged: true };
       }
     } else {
       newGrid[targetDay][targetIndex] = { course, type, span: 1 };
@@ -184,22 +203,24 @@ const EditableRoutine = () => {
     setDragData(null);
   };
 
+  // Render a single grid cell. Merged (non-start) lab cells are skipped.
   const renderCell = (day, index, cell) => {
     if (cell && cell.type === "lab" && cell.isMerged) return null;
     const colSpan = cell && cell.type === "lab" && cell.span ? cell.span : 1;
+
     return (
       <td
-        key={index}
+        key={`${day}-${index}`}
         colSpan={colSpan}
         className="border p-2 text-center"
         onDragOver={handleDragOver}
         onDrop={(e) => handleGridDrop(e, day, index)}
       >
         <div
-          draggable={cell ? true : false}
+          draggable={!!cell}
           onDragStart={(e) => handleGridDragStart(e, day, index, cell)}
           className={`h-10 flex items-center justify-center rounded ${
-            cell ? "bg-blue-300 cursor-move" : "bg-white"
+            cell ? (cell.type === "lab" ? "bg-green-300" : "bg-blue-300 cursor-move") : "bg-white"
           }`}
         >
           {cell ? cell.course : ""}
@@ -229,8 +250,7 @@ const EditableRoutine = () => {
       if (tempLab) {
         if (origin === "grid") {
           const sourceRow = [...grid[sourceDay]];
-          sourceRow[sourceIndex] = null;
-          for (let i = 1; i < span; i++) {
+          for (let i = 0; i < span; i++) {
             sourceRow[sourceIndex + i] = null;
           }
           if (!canPlaceLabAt(sourceDay, sourceIndex, sourceRow, tempLab.span)) return;
@@ -252,8 +272,7 @@ const EditableRoutine = () => {
         if (origin === "grid") {
           const newGrid = { ...grid };
           newGrid[sourceDay] = [...newGrid[sourceDay]];
-          newGrid[sourceDay][sourceIndex] = null;
-          for (let i = 1; i < span; i++) {
+          for (let i = 0; i < span; i++) {
             newGrid[sourceDay][sourceIndex + i] = null;
           }
           setSectionGrids((prev) => ({ ...prev, [selectedSection]: newGrid }));
@@ -293,10 +312,10 @@ const EditableRoutine = () => {
     setDragData(null);
   };
 
-  // ----------- Generate PDF Handler -----------
+  // ---------- Generate PDF Handler ----------
   const handleGeneratePdf = async () => {
     const modifiedRoutine = {};
-    // Loop through every section
+    // Loop through each section and extract cell data.
     Object.keys(sectionGrids).forEach((section) => {
       modifiedRoutine[section] = [];
       const grid = sectionGrids[section];
@@ -308,9 +327,8 @@ const EditableRoutine = () => {
         });
       });
     });
-    await generatePdfLabFirst(modifiedRoutine, "modifiedRoutine.pdf");
+    await generatePdf(modifiedRoutine, "modifiedRoutine.pdf");
   };
-  
 
   return (
     <div className="p-4">
@@ -324,7 +342,7 @@ const EditableRoutine = () => {
           onChange={(e) => setSelectedSection(e.target.value)}
           className="border p-1 rounded"
         >
-          {sectionKeys.map((section) => (
+          {Object.keys(routineData).map((section) => (
             <option key={section} value={section}>
               {section}
             </option>
@@ -332,6 +350,7 @@ const EditableRoutine = () => {
         </select>
       </div>
 
+      {/* Routine Table */}
       <table className="w-full table-auto border-collapse">
         <thead>
           <tr>
@@ -349,7 +368,7 @@ const EditableRoutine = () => {
               <td className="border p-2 font-semibold">{day}</td>
               {displayColumns.map((col, idx) => {
                 if (col.type === "time") {
-                  return renderCell(day, col.gridIndex, grid[day][col.gridIndex]);
+                  return renderCell(day, col.gridIndex, grid[day]?.[col.gridIndex]);
                 } else if (col.type === "gap") {
                   if (dayIdx === 0) {
                     return (
@@ -427,4 +446,4 @@ const EditableRoutine = () => {
   );
 };
 
-export default EditableRoutine;
+export default UpdateRoutine;
