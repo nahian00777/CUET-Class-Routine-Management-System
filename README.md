@@ -93,8 +93,6 @@ This will run the React frontend on **port 5173** and the backend on **port 3000
 
 ## Credits
 
-Web project for **CSE-356 (Software Engineering Sessional)**
-
 - [Nahian Chowdhury](https://github.com/nahian00777) - (nahianchowdhury00777@gmail.com)
 - [Sajib Bhattacharjee](https://github.com/Sojib001) - (sajibbhattacharjee128@gmail.com)
 - [MD Sagor Chowdhury](https://github.com/Bahar0900) - (sagormdsagorchowdhury@gmail.com)
