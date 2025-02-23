@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon -r dotenv/config --experimental-json-modules index.js",
-    "start": "node src/index.js",
-    "build": "node src/index.js"
+    "start": "node index.js",
+    "build": "node index.js"
   },
   "author": "Nahian Chowdhury, Sojib Bhattacharjee, Md. Sagor Chowdhury",
   "license": "ISC",
