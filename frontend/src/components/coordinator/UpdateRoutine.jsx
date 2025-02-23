@@ -90,7 +90,8 @@ const UpdateRoutine = () => {
   useEffect(() => {
     const fetchRoutineData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/v1/schedules/getSchedule", {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${apiUrl}/api/v1/schedules/getSchedule`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -140,7 +141,12 @@ const UpdateRoutine = () => {
       return;
     }
     e.dataTransfer.effectAllowed = "move";
-    setDragData({ origin: "grid", sourceDay: day, sourceIndex: index, ...cell });
+    setDragData({
+      origin: "grid",
+      sourceDay: day,
+      sourceIndex: index,
+      ...cell,
+    });
   };
 
   const handleDragOver = (e) => {
@@ -220,7 +226,11 @@ const UpdateRoutine = () => {
           draggable={!!cell}
           onDragStart={(e) => handleGridDragStart(e, day, index, cell)}
           className={`h-10 flex items-center justify-center rounded ${
-            cell ? (cell.type === "lab" ? "bg-green-300" : "bg-blue-300 cursor-move") : "bg-white"
+            cell
+              ? cell.type === "lab"
+                ? "bg-green-300"
+                : "bg-blue-300 cursor-move"
+              : "bg-white"
           }`}
         >
           {cell ? cell.course : ""}
@@ -253,17 +263,24 @@ const UpdateRoutine = () => {
           for (let i = 0; i < span; i++) {
             sourceRow[sourceIndex + i] = null;
           }
-          if (!canPlaceLabAt(sourceDay, sourceIndex, sourceRow, tempLab.span)) return;
+          if (!canPlaceLabAt(sourceDay, sourceIndex, sourceRow, tempLab.span))
+            return;
           const newGrid = { ...grid };
           newGrid[sourceDay] = sourceRow;
           newGrid[sourceDay][sourceIndex] = { ...tempLab, isStart: true };
           for (let i = 1; i < tempLab.span; i++) {
-            newGrid[sourceDay][sourceIndex + i] = { ...tempLab, isMerged: true };
+            newGrid[sourceDay][sourceIndex + i] = {
+              ...tempLab,
+              isMerged: true,
+            };
           }
           setSectionGrids((prev) => ({ ...prev, [selectedSection]: newGrid }));
           setSectionTempSlots((prev) => ({
             ...prev,
-            [selectedSection]: { ...prev[selectedSection], tempLab: { course, type, span } },
+            [selectedSection]: {
+              ...prev[selectedSection],
+              tempLab: { course, type, span },
+            },
           }));
         } else if (origin === "temp") {
           return;
@@ -279,7 +296,10 @@ const UpdateRoutine = () => {
         }
         setSectionTempSlots((prev) => ({
           ...prev,
-          [selectedSection]: { ...prev[selectedSection], tempLab: { course, type, span } },
+          [selectedSection]: {
+            ...prev[selectedSection],
+            tempLab: { course, type, span },
+          },
         }));
       }
     } else if (tempType === "theory") {
@@ -287,11 +307,18 @@ const UpdateRoutine = () => {
         if (origin === "grid") {
           const newGrid = { ...grid };
           newGrid[sourceDay] = [...newGrid[sourceDay]];
-          newGrid[sourceDay][sourceIndex] = { ...tempTheory, type: "theory", span: 1 };
+          newGrid[sourceDay][sourceIndex] = {
+            ...tempTheory,
+            type: "theory",
+            span: 1,
+          };
           setSectionGrids((prev) => ({ ...prev, [selectedSection]: newGrid }));
           setSectionTempSlots((prev) => ({
             ...prev,
-            [selectedSection]: { ...prev[selectedSection], tempTheory: { course, type, span: 1 } },
+            [selectedSection]: {
+              ...prev[selectedSection],
+              tempTheory: { course, type, span: 1 },
+            },
           }));
         } else if (origin === "temp") {
           return;
@@ -305,7 +332,10 @@ const UpdateRoutine = () => {
         }
         setSectionTempSlots((prev) => ({
           ...prev,
-          [selectedSection]: { ...prev[selectedSection], tempTheory: { course, type, span: 1 } },
+          [selectedSection]: {
+            ...prev[selectedSection],
+            tempTheory: { course, type, span: 1 },
+          },
         }));
       }
     }
@@ -322,7 +352,11 @@ const UpdateRoutine = () => {
       Object.keys(grid).forEach((day) => {
         grid[day].forEach((cell, index) => {
           if (cell) {
-            modifiedRoutine[section].push([cell.course, day, allTimeSlots[index]]);
+            modifiedRoutine[section].push([
+              cell.course,
+              day,
+              allTimeSlots[index],
+            ]);
           }
         });
       });
@@ -368,7 +402,11 @@ const UpdateRoutine = () => {
               <td className="border p-2 font-semibold">{day}</td>
               {displayColumns.map((col, idx) => {
                 if (col.type === "time") {
-                  return renderCell(day, col.gridIndex, grid[day]?.[col.gridIndex]);
+                  return renderCell(
+                    day,
+                    col.gridIndex,
+                    grid[day]?.[col.gridIndex]
+                  );
                 } else if (col.type === "gap") {
                   if (dayIdx === 0) {
                     return (
@@ -391,7 +429,9 @@ const UpdateRoutine = () => {
         </tbody>
       </table>
       <p className="mt-4 text-gray-500">
-        Drag and drop a course to move it to an empty grid cell (for lab courses, three consecutive cells are required), or drop it into a temporary slot to hold/swap.
+        Drag and drop a course to move it to an empty grid cell (for lab
+        courses, three consecutive cells are required), or drop it into a
+        temporary slot to hold/swap.
       </p>
 
       {/* Temporary Slots Section */}
@@ -411,7 +451,9 @@ const UpdateRoutine = () => {
               {tempLab.course}
             </div>
           ) : (
-            <span className="text-gray-500 text-lg font-semibold">Temp Lab Slot</span>
+            <span className="text-gray-500 text-lg font-semibold">
+              Temp Lab Slot
+            </span>
           )}
         </div>
 
@@ -430,7 +472,9 @@ const UpdateRoutine = () => {
               {tempTheory.course}
             </div>
           ) : (
-            <span className="text-gray-500 text-lg font-semibold">Temp Theory Slot</span>
+            <span className="text-gray-500 text-lg font-semibold">
+              Temp Theory Slot
+            </span>
           )}
         </div>
       </div>

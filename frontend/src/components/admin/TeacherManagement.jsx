@@ -13,12 +13,13 @@ export default function TeacherManagement() {
     department: "",
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/teachers/getTeacher"
+          `${apiUrl}/api/v1/teachers/getTeacher`
         );
         setTeachers(response.data.data);
       } catch (error) {
@@ -34,7 +35,7 @@ export default function TeacherManagement() {
     if (editingId) {
       try {
         await axios.patch(
-          "http://localhost:3000/api/v1/teachers/updateTeacher",
+          `${apiUrl}/api/v1/teachers/updateTeacher`,
           {
             prevTeacherID: editingId,
             teacherID: formData.teacherID,
@@ -54,7 +55,7 @@ export default function TeacherManagement() {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/v1/teachers/addTeacher",
+          `${apiUrl}/api/v1/teachers/addTeacher`,
           {
             teacherID: formData.teacherID,
             teacherName: formData.teacherName,
@@ -83,7 +84,7 @@ export default function TeacherManagement() {
   const handleDelete = async (teacherID) => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/v1/teachers/deleteTeacher`,
+        `${apiUrl}/api/v1/teachers/deleteTeacher`,
         {
           data: { teacherID },
         }

@@ -27,12 +27,13 @@ function GenerateRoutine() {
     is_lab: false,
     time_slots: [],
   });
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3000/api/v1/schedules/findSchedule",
+          `${apiUrl}/api/v1/schedules/findSchedule`,
           {
             method: "POST",
             headers: {
@@ -91,16 +92,13 @@ function GenerateRoutine() {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/v1/courses/getCourseById",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ courseId: newCourse.course_code }),
-        }
-      );
+      const response = await fetch(`${apiUrl}/api/v1/courses/getCourseById`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ courseId: newCourse.course_code }),
+      });
 
       if (response.status !== 200) {
         alert("The course is not registered");
@@ -145,7 +143,7 @@ function GenerateRoutine() {
       // Commenting out the API call
       /*
     const response = await fetch(
-      `http://localhost:3000/api/v1/schedules/updateTimeSlot`,
+      `${apiUrl}/api/v1/schedules/updateTimeSlot`,
       {
         method: "PATCH",
         headers: {

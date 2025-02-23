@@ -14,12 +14,13 @@ export default function CourseManagement() {
     courseType: "Theory", // Default value
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/courses/getCourse"
+          `${apiUrl}/api/v1/courses/getCourse`
         );
         setCourses(response.data.data);
       } catch (error) {
@@ -34,7 +35,7 @@ export default function CourseManagement() {
     e.preventDefault();
     if (editingId) {
       try {
-        await axios.patch("http://localhost:3000/api/v1/courses/updateCourse", {
+        await axios.patch( `${apiUrl}/api/v1/courses/updateCourse`, {
           prevCourseID: editingId,
           courseID: formData.courseID,
           courseName: formData.courseName,
@@ -59,7 +60,7 @@ export default function CourseManagement() {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/v1/courses/addCourse",
+          `${apiUrl}/api/v1/courses/addCourse`,
           {
             courseID: formData.courseID,
             courseName: formData.courseName,
@@ -94,7 +95,7 @@ export default function CourseManagement() {
 
   const handleDelete = async (courseID) => {
     try {
-      await axios.delete(`http://localhost:3000/api/v1/courses/deleteCourse`, {
+      await axios.delete(`${apiUrl}/api/v1/courses/deleteCourse`, {
         data: { courseID },
       });
       setCourses(courses.filter((course) => course.courseID !== courseID));

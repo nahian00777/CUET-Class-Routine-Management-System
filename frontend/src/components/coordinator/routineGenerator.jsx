@@ -2,16 +2,14 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const findCourse = async (courseId) => {
   try {
-    const response = await fetch(
-      "http://localhost:3000/api/v1/courses/getCourseById",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ courseId }), // Send courseId in the request body
-      }
-    );
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${apiUrl}/api/v1/courses/getCourseById`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ courseId }), // Send courseId in the request body
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch course");
@@ -32,22 +30,20 @@ const findCourse = async (courseId) => {
 
 const storeScheduleData = async (routine, department, section, level, term) => {
   try {
-    const response = await fetch(
-      "http://localhost:3000/api/v1/schedules/setSchedule",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          routine,
-          department,
-          section,
-          level,
-          term
-        }),
-      }
-    );
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${apiUrl}/api/v1/schedules/setSchedule`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        routine,
+        department,
+        section,
+        level,
+        term,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to store schedule data");
@@ -290,13 +286,7 @@ export const generatePdf = async (routine, fileName = "routine.pdf") => {
     const [startTime, endTime] = time.split("-");
 
     console.log(routine[section]);
-    await storeScheduleData(
-      routine[section],
-      department,
-      section,
-      level,
-      term,
-    );
+    await storeScheduleData(routine[section], department, section, level, term);
 
     // Create a time slot object
     const timeSlots = {

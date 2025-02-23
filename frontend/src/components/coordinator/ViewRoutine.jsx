@@ -28,13 +28,37 @@ const displayColumns = [
 
 const initialRoutine = {
   A: [
-    { course: "111", day: "Sunday", time: "11:00-11:50", type: "theory", span: 1 },
-    { course: "222", day: "Monday", time: "9:50-10:40", type: "theory", span: 1 },
+    {
+      course: "111",
+      day: "Sunday",
+      time: "11:00-11:50",
+      type: "theory",
+      span: 1,
+    },
+    {
+      course: "222",
+      day: "Monday",
+      time: "9:50-10:40",
+      type: "theory",
+      span: 1,
+    },
     { course: "44", day: "Sunday", time: "2:30-3:20", type: "lab", span: 3 },
   ],
   B: [
-    { course: "333", day: "Tuesday", time: "8:10-9:00", type: "theory", span: 1 },
-    { course: "444", day: "Wednesday", time: "11:00-11:50", type: "lab", span: 3 },
+    {
+      course: "333",
+      day: "Tuesday",
+      time: "8:10-9:00",
+      type: "theory",
+      span: 1,
+    },
+    {
+      course: "444",
+      day: "Wednesday",
+      time: "11:00-11:50",
+      type: "lab",
+      span: 3,
+    },
   ],
 };
 
@@ -44,14 +68,14 @@ const ViewRoutine = () => {
   useEffect(() => {
     const fetchRoutineData = async () => {
       try {
-        const term = 'Term 1';
-        const level = 'Level 1';
-        const department = 'CSE';
-
-        const response = await fetch('http://localhost:3000/api/v1/schedules/getSchedule', {
-          method: 'POST',
+        const term = "Term 1";
+        const level = "Level 1";
+        const department = "CSE";
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${apiUrl}/api/v1/schedules/getSchedule`, {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             term,
@@ -61,20 +85,19 @@ const ViewRoutine = () => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch routine data');
+          throw new Error("Failed to fetch routine data");
         }
 
         const data = await response.json();
         setRoutine(data.data || initialRoutine);
       } catch (error) {
-        console.error('Error fetching routine data:', error);
+        console.error("Error fetching routine data:", error);
         setRoutine(initialRoutine);
       }
     };
 
     fetchRoutineData();
   }, []);
-  
 
   const buildGridFromRoutine = (sectionRoutine) => {
     const grid = {};
@@ -157,7 +180,10 @@ const ViewRoutine = () => {
       {Object.keys(routine).map((section) => {
         const grid = buildGridFromRoutine(routine[section]);
         return (
-          <div key={section} className="shadow-lg rounded-lg overflow-hidden bg-white">
+          <div
+            key={section}
+            className="shadow-lg rounded-lg overflow-hidden bg-white"
+          >
             <h2 className="text-2xl font-bold bg-blue-500 text-white p-4">
               Routine for {section}
             </h2>

@@ -14,12 +14,13 @@ export default function CoordinatorManagement() {
     assignedBatch: "",
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchCoordinators = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/coordinators/getCoordinator"
+          `${apiUrl}/api/v1/coordinators/getCoordinator`
         );
         setCoordinators(response.data.data);
       } catch (error) {
@@ -35,7 +36,7 @@ export default function CoordinatorManagement() {
     if (editingId) {
       try {
         await axios.patch(
-          "http://localhost:3000/api/v1/coordinators/updateCoordinator",
+          `${apiUrl}/api/v1/coordinators/updateCoordinator`,
           {
             prevCoordinatorID: editingId,
             coordinatorID: formData.coordinatorID,
@@ -58,7 +59,7 @@ export default function CoordinatorManagement() {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/v1/coordinators/addCoordinator",
+          `${apiUrl}/api/v1/coordinators/addCoordinator`,
           {
             coordinatorID: formData.coordinatorID,
             coordinatorName: formData.coordinatorName,
@@ -94,7 +95,7 @@ export default function CoordinatorManagement() {
   const handleDelete = async (coordinatorID) => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/v1/coordinators/deleteCoordinator`,
+        `${apiUrl}/api/v1/coordinators/deleteCoordinator`,
         {
           data: { coordinatorID },
         }

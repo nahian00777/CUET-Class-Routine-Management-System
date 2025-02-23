@@ -10,14 +10,15 @@ function SignIn() {
   const [error, setError] = useState("");
 
   const validateEmail = (email) => {
-    return true
+    return true;
   };
 
   const validatePassword = (password) => {
-    return true
+    return true;
   };
 
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,14 +37,11 @@ function SignIn() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/users/login",
-        {
-          username: email,
-          password: password,
-          role: role,
-        }
-      );
+      const response = await axios.post(`${apiUrl}/api/v1/users/login`, {
+        username: email,
+        password: password,
+        role: role,
+      });
 
       // Assuming the response contains a token or user data
       console.log("Login successful:", response.data);
@@ -61,10 +59,8 @@ function SignIn() {
     } catch (error) {
       console.error("Error logging in:", error);
       console.log("Role:", role);
-      if(role === "") 
-        setError("Login failed. Please select a role.");
-      else
-        setError("Login failed. Please check your credentials.");
+      if (role === "") setError("Login failed. Please select a role.");
+      else setError("Login failed. Please check your credentials.");
     }
   };
 
