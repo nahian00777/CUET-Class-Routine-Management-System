@@ -1,40 +1,36 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { GraduationCap, Lock, Mail, UserCircle } from "lucide-react";
+import { GraduationCap, Lock, Mail, UserCircle, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+const DEMO_CREDENTIALS = {
+  admin:       { email: "admin2",               password: "123456",  role: "admin" },
+  teacher:     { email: "2004005@teacher.com",  password: "2004005", role: "teacher" },
+  coordinator: { email: "200400@coordinator.com", password: "200400", role: "coordinator" },
+};
 
 function SignIn() {
   const [role, setRole] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  const validateEmail = (email) => {
-    return true;
-  };
-
-  const validatePassword = (password) => {
-    return true;
-  };
+  const [demoActive, setDemoActive] = useState(null);
 
   const navigate = useNavigate();
   const apiUrl = import.meta.env.VITE_API_URL;
 
+  const handleDemoLogin = (demoRole) => {
+    const creds = DEMO_CREDENTIALS[demoRole];
+    setRole(creds.role);
+    setEmail(creds.email);
+    setPassword(creds.password);
+    setError("");
+    setDemoActive(demoRole);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      setError(
-        "Password must be at least 8 characters long and contain at least one uppercase letter."
-      );
-      return;
-    }
 
     try {
       const response = await axios.post(`${apiUrl}/api/v1/users/login`, {
@@ -43,22 +39,14 @@ function SignIn() {
         role: role,
       });
 
-      // Assuming the response contains a token or user data
       console.log("Login successful:", response.data);
 
-      // Navigate based on role
-      if (role === "coordinator") {
-        navigate("/coordinator");
-      } else if (role === "teacher") {
-        navigate("/teacher");
-      } else if (role === "admin") {
-        navigate("/admin");
-      } else {
-        console.log("Role not recognized for navigation:", role);
-      }
+      if (role === "coordinator") navigate("/coordinator");
+      else if (role === "teacher") navigate("/teacher");
+      else if (role === "admin") navigate("/admin");
+      else console.log("Role not recognized for navigation:", role);
     } catch (error) {
       console.error("Error logging in:", error);
-      console.log("Role:", role);
       if (role === "") setError("Login failed. Please select a role.");
       else setError("Login failed. Please check your credentials.");
     }
@@ -71,35 +59,64 @@ function SignIn() {
         <div className="flex items-center justify-center">
           <GraduationCap className="h-12 w-12 text-blue-600" />
         </div>
-        <h2 className="mt-2 text-3xl font-bold text-gray-900">
-          Welcome to CUET Routine
-        </h2>
-        <p className="text-gray-600">
-          Chittagong University of Engineering & Technology
-        </p>
+        <h2 className="mt-2 text-3xl font-bold text-gray-900">Welcome to CUET Routine</h2>
+        <p className="text-gray-600">Chittagong University of Engineering & Technology</p>
       </div>
 
-      {/* Sign In Form */}
       <div className="max-w-md w-full mx-auto px-4">
+        {/* Demo Login Banner */}
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="h-4 w-4 text-amber-600" />
+            <span className="text-sm font-semibold text-amber-800">Try a Demo Account</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { key: "admin",       label: "Admin" },
+              { key: "teacher",     label: "Teacher" },
+              { key: "coordinator", label: "Coordinator" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleDemoLogin(key)}
+                className={`py-1.5 px-2 rounded-md text-xs font-medium border transition-all ${
+                  demoActive === key
+                    ? "bg-amber-500 border-amber-500 text-white"
+                    : "bg-white border-amber-300 text-amber-700 hover:bg-amber-100"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {demoActive && (
+            <p className="mt-2 text-xs text-amber-700">
+              ✓ Demo credentials filled — click <strong>Sign In</strong> to continue.
+            </p>
+          )}
+        </div>
+
+        {/* Sign In Form */}
         <div className="bg-white shadow-lg rounded-lg p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection */}
             <div className="grid grid-cols-3 gap-3">
               <RoleButton
                 active={role === "admin"}
-                onClick={() => setRole("admin")}
+                onClick={() => { setRole("admin"); setDemoActive(null); }}
                 icon={<UserCircle className="h-5 w-5" />}
                 label="Admin"
               />
               <RoleButton
                 active={role === "coordinator"}
-                onClick={() => setRole("coordinator")}
+                onClick={() => { setRole("coordinator"); setDemoActive(null); }}
                 icon={<UserCircle className="h-5 w-5" />}
                 label="Course Coordinator"
               />
               <RoleButton
                 active={role === "teacher"}
-                onClick={() => setRole("teacher")}
+                onClick={() => { setRole("teacher"); setDemoActive(null); }}
                 icon={<UserCircle className="h-5 w-5" />}
                 label="Teacher"
               />
@@ -107,10 +124,7 @@ function SignIn() {
 
             {/* Email Field */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <div className="mt-1 relative">
@@ -119,9 +133,9 @@ function SignIn() {
                 </div>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setDemoActive(null); }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="your.email@cuet.ac.bd"
                 />
@@ -130,10 +144,7 @@ function SignIn() {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="mt-1 relative">
@@ -144,14 +155,14 @@ function SignIn() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setDemoActive(null); }}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
-            {/* Reserved Space for Error Message */}
+            {/* Error Message */}
             <div className="h-6 text-center">
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
@@ -182,7 +193,6 @@ function SignIn() {
   );
 }
 
-// Role Button Component
 function RoleButton({ active, onClick, icon, label }) {
   return (
     <button
